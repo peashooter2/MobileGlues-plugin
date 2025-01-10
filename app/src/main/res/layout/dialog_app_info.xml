@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="20dp"
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -22,7 +23,7 @@
                 android:layout_height="wrap_content"
                 app:barrierDirection="end"
                 app:barrierMargin="10dp"
-                app:constraint_referenced_ids="text_view_version, text_view_author, text_view_launcher, text_view_copyright" />
+                app:constraint_referenced_ids="text_view_version, text_view_author, text_view_launcher, text_view_copyright, text_view_logo, text_view_gl_info" />
 
             <TextView
                 android:id="@+id/text_view_version"
@@ -112,9 +113,34 @@
                 app:layout_constraintBaseline_toBaselineOf="@+id/text_view_logo"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/end_barrier" />
+            <TextView
+                android:id="@+id/text_view_gl_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/info_mg_info"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_info_logo" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_gl_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?attr/materialButtonOutlinedStyle"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="@string/button_view_gl_info"
+                app:layout_constraintBaseline_toBaselineOf="@+id/text_view_gl_info"
+                app:layout_constraintStart_toEndOf="@+id/end_barrier" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     </ScrollView>
 

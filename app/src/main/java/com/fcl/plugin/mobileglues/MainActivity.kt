@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_about -> {
-                AppInfoDialogBuilder(this).show()
+                AppInfoDialogBuilder(this, config).showDialog()
                 true
             }
 
@@ -277,6 +277,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             else -> super.onOptionsItemSelected(item)
         }
     }
+
 
     private fun showRemoveConfirmationDialog() {
         val dialog = MaterialAlertDialogBuilder(this)

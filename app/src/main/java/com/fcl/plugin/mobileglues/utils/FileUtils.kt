@@ -74,9 +74,9 @@ object FileUtils {
 
     @Throws(IOException::class)
     fun writeText(file: File, text: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            throw UnsupportedOperationException("Use SAF method for Android 10+")
-        }
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        //     throw UnsupportedOperationException("Use SAF method for Android 10+")
+        // }
         writeText(file, text, StandardCharsets.UTF_8)
     }
 
