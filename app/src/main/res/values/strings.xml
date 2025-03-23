@@ -15,7 +15,7 @@
     <string name="clear_permission">Reset folder authorization</string>
 
     <string name="option_glsl_cache">Max glsl cache size (enter -1 to disable)</string>
-    <string name="option_glsl_cache_helper">Unit: GigaByte (MB)</string>
+    <string name="option_glsl_cache_helper">Unit: Megabytes (MB)</string>
     <string name="option_angle">Use ANGLE as OpenGL ES driver</string>
     <string name="option_angle_disable_if_possible">Disable if possible</string>
     <string name="option_angle_enable_if_possible">Enable if possible</string>
