@@ -82,6 +82,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter<String> noErrorAdapter = new ArrayAdapter<>(this, R.layout.spinner, noErrorOptions);
         binding.spinnerNoError.setAdapter(noErrorAdapter);
 
+        ArrayList<String> multidrawModeOptions = new ArrayList<>();
+        multidrawModeOptions.add(getString(R.string.option_multidraw_mode_auto));
+        multidrawModeOptions.add(getString(R.string.option_multidraw_mode_indirect));
+        multidrawModeOptions.add(getString(R.string.option_multidraw_mode_basevertex));
+        multidrawModeOptions.add(getString(R.string.option_multidraw_mode_multidraw_indirect));
+        ArrayAdapter<String> multidrawModeAdapter = new ArrayAdapter<>(this, R.layout.spinner, multidrawModeOptions);
+        binding.spinnerMultidrawMode.setAdapter(multidrawModeAdapter);
+
         binding.info.setOnClickListener(view -> new AppInfoDialogBuilder(MainActivityContext).create().show());
 
         binding.openOptions.setOnClickListener(view -> {
@@ -105,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 0, 24);
+                config = new MGConfig(0, 0, 0, 0, 24, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -118,11 +126,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.inputMaxGlslCacheSize.setText(String.valueOf(config.getMaxGlslCacheSize()));
             binding.spinnerAngle.setSelection(config.getEnableANGLE());
             binding.spinnerNoError.setSelection(config.getEnableNoError());
+            binding.spinnerMultidrawMode.setSelection(config.getMultidrawMode());
             binding.switchExtGl43.setChecked(config.getEnableExtGL43() == 1);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
             binding.spinnerNoError.setOnItemSelectedListener(this);
+            binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
             binding.inputMaxGlslCacheSize.addTextChangedListener(new TextWatcher() {
@@ -227,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 0, 24);
+                            if (config == null) config = new MGConfig(0, 0, 0, 0, 24, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
@@ -276,6 +286,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (adapterView == binding.spinnerNoError && config != null) {
             try {
                 config.setEnableNoError(i);
+            } catch (IOException e) {
+                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
+                Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (adapterView == binding.spinnerMultidrawMode && config != null) {
+            try {
+                config.setMultidrawMode(i);
             } catch (IOException e) {
                 Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
                 Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();

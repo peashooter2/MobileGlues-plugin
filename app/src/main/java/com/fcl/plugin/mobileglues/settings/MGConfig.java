@@ -24,13 +24,15 @@ public class MGConfig {
     private int enableExtGL43;
     private int enableExtComputeShader;
     private int maxGlslCacheSize;
+    private int multidrawMode;
 
-    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtComputeShader, int maxGlslCacheSize) {
+    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtComputeShader, int maxGlslCacheSize, int multidrawMode) {
         this.enableANGLE = enableANGLE;
         this.enableNoError = enableNoError;
         this.enableExtGL43 = enableExtGL43;
         this.enableExtComputeShader = enableExtComputeShader;
         this.maxGlslCacheSize = maxGlslCacheSize;
+        this.multidrawMode = multidrawMode;
     }
 
     public void setMaxGlslCacheSize(int maxGlslCacheSize) throws IOException {
@@ -62,6 +64,11 @@ public class MGConfig {
         saveConfig();
     }
 
+    public void setMultidrawMode(int multidrawMode) throws IOException {
+        this.multidrawMode = multidrawMode;
+        saveConfig();
+    }
+
     public int getEnableANGLE() {
         return enableANGLE;
     }
@@ -79,6 +86,10 @@ public class MGConfig {
     }
     
     public int getMaxGlslCacheSize() { return maxGlslCacheSize; }
+
+    public int getMultidrawMode() {
+        return multidrawMode;
+    }
 
     private void clearCacheFile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
