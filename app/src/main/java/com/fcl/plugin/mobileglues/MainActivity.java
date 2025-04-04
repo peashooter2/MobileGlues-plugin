@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         multidrawModeOptions.add(getString(R.string.option_multidraw_mode_indirect));
         multidrawModeOptions.add(getString(R.string.option_multidraw_mode_basevertex));
         multidrawModeOptions.add(getString(R.string.option_multidraw_mode_multidraw_indirect));
+        multidrawModeOptions.add(getString(R.string.option_multidraw_mode_drawelements));
         ArrayAdapter<String> multidrawModeAdapter = new ArrayAdapter<>(this, R.layout.spinner, multidrawModeOptions);
         binding.spinnerMultidrawMode.setAdapter(multidrawModeAdapter);
 

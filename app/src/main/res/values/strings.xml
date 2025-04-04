@@ -37,6 +37,7 @@
     <string name="option_multidraw_mode_indirect">Prefer Indirect</string>
     <string name="option_multidraw_mode_basevertex">Prefer BaseVertex</string>
     <string name="option_multidraw_mode_multidraw_indirect">Prefer MultiDraw Indirect</string>
+    <string name="option_multidraw_mode_drawelements">Forcing DrawElements</string>
 
     <string name="option_ext_gl43">Enable incomplete OpenGL43 extension</string>
     <string name="option_ext_cs">Enable incomplete ARB_compute_shader extension</string>
