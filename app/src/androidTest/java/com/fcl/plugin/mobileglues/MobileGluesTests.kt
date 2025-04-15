@@ -6,4 +6,4 @@ import org.junit.runner.RunWith
 
 @RunWith(GtestRunner::class)
 @TargetLibrary(libraryName = "mobileglues_tests")
-class SanityCheckTest
+class MobileGluesTests
