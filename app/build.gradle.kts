@@ -17,6 +17,12 @@ android {
         versionName = "1.2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DMOBILEGLUES_TEST=1")
+            }
+        }
     }
 
     signingConfigs {
@@ -68,6 +74,33 @@ android {
         }
     }
 
+    buildFeatures {
+        viewBinding = true
+        prefab = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("../MobileGlues/src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            // Gradle has no way of knowing which of the libraries in our
+            // CMakeLists.txt are for the app and which are for tests, so we
+            // have to tell it which libraries are test libraries. Without
+            // this, the test libraries will end up packaged in the real API
+            // and not just the test APK.
+            //
+            // If you copy this project, be sure to update this to specify the
+            // names of your own test libraries.
+            testOnly.add("**/libmobileglues_tests.so")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -88,4 +121,9 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.google.material)
     implementation(project(":MobileGlues"))
+    implementation(libs.androidx.junit.gtest)
+    implementation(libs.googletest)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
 }
