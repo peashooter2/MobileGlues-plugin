@@ -39,6 +39,9 @@
     <string name="option_ext_gl43">启用不完整的 OpenGL43 扩展</string>
     <string name="option_ext_cs">启用不完整的 ARB_compute_shader 扩展</string>
 
+    <string name="option_mojang_color">Mojang 界面背景颜色</string>
+    <string name="open_color_pick">调整</string>
+    
     <string name="dialog_positive">确认</string>
     <string name="dialog_negative">取消</string>
 

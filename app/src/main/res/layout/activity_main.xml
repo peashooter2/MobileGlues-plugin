@@ -40,6 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            tools:visibility="visible"
             android:padding="8dp">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -113,8 +114,28 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:minHeight="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/switch_ext_gl43" />
+                app:layout_constraintBottom_toTopOf="@+id/linearLayout_mojang_color" />
 
+            <LinearLayout
+                android:id="@+id/linearLayout_mojang_color"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toTopOf="@+id/switch_ext_gl43">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/option_mojang_color" />
+
+                <Button
+                    android:id="@+id/open_color_pick"
+                    android:layout_width="wrap_content"
+                    android:text="@string/open_color_pick"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switch_ext_gl43"
                 android:layout_width="match_parent"
@@ -126,7 +147,7 @@
                 android:id="@+id/switch_ext_cs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/option_ext_cs"
+                android:text="@string/option_ext_cs"                
                 app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
