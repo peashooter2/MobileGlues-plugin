@@ -8,6 +8,9 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
@@ -21,7 +24,9 @@ import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,9 +34,13 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -43,6 +52,10 @@ import com.fcl.plugin.mobileglues.utils.ResultListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
+import com.larswerkman.holocolorpicker.ColorPicker;
+import com.larswerkman.holocolorpicker.SaturationBar;
+import com.larswerkman.holocolorpicker.OpacityBar;
+import android.widget.TextView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -56,6 +69,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MGConfig config = null;
     private FolderPermissionManager folderPermissionManager;
     private Boolean State = true;
+    private int currentColor = Color.WHITE;
+    private int currentAlpha = 255;
+    private AlertDialog colorPickerDialog;
+    private TextView rgbaTextView;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,6 +119,138 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 checkPermissionSilently();
             }
         });
+        binding.openColorPick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showColorPickerDialog(v);
+            }
+        });
+    }
+    private void showColorPickerDialog(View anchorView) {
+        
+        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this);
+
+        // Create ColorPicker, SaturationBar, and OpacityBar programmatically
+        LinearLayout mainLayout = new LinearLayout(this);
+        mainLayout.setOrientation(LinearLayout.VERTICAL);
+        mainLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        ColorPicker picker = new ColorPicker(this);
+        LinearLayout.LayoutParams pickerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        picker.setLayoutParams(pickerParams);
+
+        SaturationBar saturationBar = new SaturationBar(this);
+        LinearLayout.LayoutParams saturationBarParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        saturationBarParams.setMargins(30,0,30,0);
+        saturationBar.setLayoutParams(saturationBarParams);
+
+        OpacityBar opacityBar = new OpacityBar(this);
+        LinearLayout.LayoutParams opacityBarParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        opacityBarParams.setMargins(30,0,30,0);
+        opacityBar.setOpacity(currentAlpha);
+        opacityBar.setLayoutParams(opacityBarParams);
+
+        rgbaTextView = new TextView(this);
+        LinearLayout.LayoutParams rgbaTextViewParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+
+        rgbaTextViewParams.setMargins(30, 20, 30, 20);
+        rgbaTextView.setPadding(
+                (int) (16 * getResources().getDisplayMetrics().density),
+                (int) (8 * getResources().getDisplayMetrics().density),
+                (int) (16 * getResources().getDisplayMetrics().density),
+                (int) (8 * getResources().getDisplayMetrics().density)
+        );
+
+        rgbaTextView.setGravity(Gravity.CENTER);
+        rgbaTextView.setLayoutParams(rgbaTextViewParams);
+
+        GradientDrawable initialBg = new GradientDrawable();
+        initialBg.setShape(GradientDrawable.RECTANGLE);
+        initialBg.setCornerRadius(16 * getResources().getDisplayMetrics().density);
+        initialBg.setColor(Color.TRANSPARENT);
+        rgbaTextView.setBackground(initialBg);
+
+        mainLayout.addView(picker);
+        mainLayout.addView(saturationBar);
+        mainLayout.addView(opacityBar);
+        mainLayout.addView(rgbaTextView);
+        builder.setView(mainLayout);
+        picker.addSaturationBar(saturationBar);
+        picker.addOpacityBar(opacityBar);
+
+        picker.setColor(currentColor);
+
+        updateRGBA(picker.getColor(), opacityBar.getOpacity());
+
+        picker.setOnColorChangedListener(color -> updateRGBA(color, opacityBar.getOpacity()));
+        opacityBar.setOnOpacityChangedListener(alpha -> updateRGBA(picker.getColor(), alpha));
+
+        colorPickerDialog = builder.create();
+        colorPickerDialog.show();
+    }
+
+    private void updateRGBA(int color, int alpha) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        currentAlpha = alpha;
+        currentColor = color;
+
+        float[] mojangInterfaceColor = new float[]{
+                red / 255f,
+                green / 255f,
+                blue / 255f,
+                alpha / 255f
+        };
+        if(config != null) {
+            try {
+                config.setMojangInterfaceColor(mojangInterfaceColor);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        runOnUiThread(() -> {
+            if (rgbaTextView != null) {
+                GradientDrawable bgDrawable = new GradientDrawable();
+                bgDrawable.setShape(GradientDrawable.RECTANGLE);
+
+                float cornerRadius = 16 * getResources().getDisplayMetrics().density;
+                bgDrawable.setCornerRadii(new float[]{
+                        cornerRadius, cornerRadius,
+                        cornerRadius, cornerRadius,
+                        cornerRadius, cornerRadius,
+                        cornerRadius, cornerRadius 
+                });
+
+                bgDrawable.setColor(Color.argb(alpha, red, green, blue));
+
+                bgDrawable.setStroke(
+                        (int) (1 * getResources().getDisplayMetrics().density),
+                        Color.argb(50, 0, 0, 0)
+                );
+
+                rgbaTextView.setBackground(bgDrawable);
+
+                rgbaTextView.setText(String.format("R:%d G:%d B:%d A:%d", red, green, blue, alpha));
+
+                float luminance = 0.2126f * red + 0.7152f * green + 0.0722f * blue;
+                int textColor = (luminance > 128) ? Color.BLACK : Color.WHITE;
+                rgbaTextView.setTextColor(textColor);
+            }
+        });
     }
 
     @Override
@@ -112,9 +262,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void showOptions() {
         try {
             config = MGConfig.loadConfig(this);
-
+            
+            float[] initialColor = config == null ? new float[]{1f, 1f, 1f, 1f} : config.getMojangInterfaceColor();
+            if (initialColor.length == 4){
+                currentColor = Color.argb((int)(initialColor[3] * 255), (int)(initialColor[0] * 255), (int)(initialColor[1] * 255), (int)(initialColor[2] * 255));
+                currentAlpha = (int)(initialColor[3] * 255);
+            }
+            
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 0, 24, 0);
+                config = new MGConfig(0, 0, 0, 0, 24, 0, new float[]{});
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -130,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerMultidrawMode.setSelection(config.getMultidrawMode());
             binding.switchExtGl43.setChecked(config.getEnableExtGL43() == 1);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
-
+            
             binding.spinnerAngle.setOnItemSelectedListener(this);
             binding.spinnerNoError.setOnItemSelectedListener(this);
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
@@ -238,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 0, 24, 0);
+                            if (config == null) config = new MGConfig(0, 0, 0, 0, 24, 0, new float[]{});
                             config.saveConfig(this);
                             showOptions();
                         }
