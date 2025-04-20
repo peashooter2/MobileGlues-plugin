@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.opengl.EGL14;
@@ -25,6 +26,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -37,8 +39,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.fcl.plugin.mobileglues.databinding.ActivityMainBinding;
 import com.fcl.plugin.mobileglues.settings.FolderPermissionManager;
@@ -259,8 +263,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             config = MGConfig.loadConfig(this);
             
-            float[] initialColor = (config == null || config.getMojangInterfaceColor() == null) ? new float[] {1f, 1f, 1f, 1f} : config.getMojangInterfaceColor();
-            if (initialColor.length == 4) {
+            float[] initialColor = config == null ? new float[]{1f, 1f, 1f, 1f} : config.getMojangInterfaceColor();
+            if (initialColor.length == 4){
                 currentColor = Color.argb((int)(initialColor[3] * 255), (int)(initialColor[0] * 255), (int)(initialColor[1] * 255), (int)(initialColor[2] * 255));
                 currentAlpha = (int)(initialColor[3] * 255);
             }
