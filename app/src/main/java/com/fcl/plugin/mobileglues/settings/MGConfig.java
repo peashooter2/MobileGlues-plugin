@@ -25,15 +25,13 @@ public class MGConfig {
     private int enableExtComputeShader;
     private int maxGlslCacheSize;
     private int multidrawMode;
-    private float[] mojangInterfaceColor;
 
-    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtComputeShader, int maxGlslCacheSize, int multidrawMode, float[] mojangInterfaceColor) {
+    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtComputeShader, int maxGlslCacheSize, int multidrawMode) {
         this.enableANGLE = enableANGLE;
         this.enableNoError = enableNoError;
         this.enableExtGL43 = enableExtGL43;
         this.enableExtComputeShader = enableExtComputeShader;
         this.maxGlslCacheSize = maxGlslCacheSize;
-        this.mojangInterfaceColor = mojangInterfaceColor;
         this.multidrawMode = multidrawMode;
     }
 
@@ -71,11 +69,6 @@ public class MGConfig {
         saveConfig();
     }
 
-    public void setMojangInterfaceColor(float[] mojangInterfaceColor) throws IOException {
-        this.mojangInterfaceColor = mojangInterfaceColor;
-        saveConfig();
-    }
-
     public int getEnableANGLE() {
         return enableANGLE;
     }
@@ -96,10 +89,6 @@ public class MGConfig {
 
     public int getMultidrawMode() {
         return multidrawMode;
-    }
-    
-    public float[] getMojangInterfaceColor() {
-        return mojangInterfaceColor;
     }
 
     private void clearCacheFile() {
