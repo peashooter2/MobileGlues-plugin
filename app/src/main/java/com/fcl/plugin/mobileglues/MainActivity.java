@@ -22,6 +22,8 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -55,16 +57,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private MGConfig config = null;
     private FolderPermissionManager folderPermissionManager;
-    private Boolean State = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         folderPermissionManager = new FolderPermissionManager(this);
         MainActivityContext = this;
+        setSupportActionBar(binding.appBar);
 
         ArrayList<String> angleOptions = new ArrayList<>();
         angleOptions.add(getString(R.string.option_angle_disable_if_possible));
@@ -92,16 +94,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter<String> multidrawModeAdapter = new ArrayAdapter<>(this, R.layout.spinner, multidrawModeOptions);
         binding.spinnerMultidrawMode.setAdapter(multidrawModeAdapter);
 
-        binding.info.setOnClickListener(view -> new AppInfoDialogBuilder(MainActivityContext).create().show());
-
-        binding.openOptions.setOnClickListener(view -> {
-            if (State) {
-                checkPermission();
-            } else {
-                folderPermissionManager.clearAllPermissions();
-                checkPermissionSilently();
-            }
-        });
+        binding.openOptions.setOnClickListener(view -> checkPermission());
     }
 
     @Override
@@ -110,12 +103,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         checkPermissionSilently();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_about) {
+            new AppInfoDialogBuilder(MainActivityContext).show();
+            return true;
+        } else return super.onOptionsItemSelected(item);
+    }
+
     private void showOptions() {
         try {
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 0, 24, 0);
+                config = new MGConfig(0, 0, 0, 0, 32, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -123,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 config.setEnableNoError(0);
 
             if (config.getMaxGlslCacheSize() == NULL)
-                config.setMaxGlslCacheSize(24);
+                config.setMaxGlslCacheSize(32);
 
             binding.inputMaxGlslCacheSize.setText(String.valueOf(config.getMaxGlslCacheSize()));
             binding.spinnerAngle.setSelection(config.getEnableANGLE());
@@ -159,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     } else {
                         binding.inputMaxGlslCacheSizeLayout.setError(null);
                         try {
-                            config.setMaxGlslCacheSize(24);
+                            config.setMaxGlslCacheSize(32);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -174,8 +181,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
                 }
             });
-            State = false;
-            binding.openOptions.setText(getString(R.string.clear_permission));
+            binding.openOptions.setVisibility(View.GONE);
             binding.optionLayout.setVisibility(View.VISIBLE);
         } catch (IOException e) {
             Logger.getLogger("MG").log(Level.SEVERE, "Failed to load config! Exception: ", e.getCause());
@@ -184,8 +190,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void hideOptions() {
-        State = true;
-        binding.openOptions.setText(getString(R.string.open_options));
+        binding.openOptions.setVisibility(View.VISIBLE);
         binding.optionLayout.setVisibility(View.GONE);
     }
 
@@ -239,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 0, 24, 0);
+                            if (config == null) config = new MGConfig(0, 0, 0, 0, 32, 0);
                             config.saveConfig(this);
                             showOptions();
                         }

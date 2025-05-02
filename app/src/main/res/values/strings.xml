@@ -12,7 +12,7 @@
 
     <string name="open_options">Modify renderer settings</string>
 
-    <string name="clear_permission">Reset folder authorization</string>
+    <string name="menu_item_about">About</string>
 
     <string name="option_glsl_cache">Max glsl cache size (enter -1 to disable)</string>
     <string name="option_glsl_cache_helper">Unit: Megabytes (MB)</string>
@@ -45,6 +45,7 @@
 
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
+    <string name="dialog_github">GitHub Release</string>
 
     <string name="dialog_info">App Info</string>
 
