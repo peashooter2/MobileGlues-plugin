@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
 
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -81,23 +80,7 @@ public class FileUtils {
         return new String(Files.readAllBytes(file.toPath()), charset);
     }
 
-    public static String readText(Path file) throws IOException {
-        return readText(file, UTF_8);
-    }
-
-    public static String readText(Path file, Charset charset) throws IOException {
-        return new String(Files.readAllBytes(file), charset);
-    }
-
-    public static void writeText(Path file, String text) throws IOException {
-        writeText(file, text, UTF_8);
-    }
-
     public static void writeText(File file, String text, Charset charset) throws IOException {
-        writeBytes(file, text.getBytes(charset));
-    }
-
-    public static void writeText(Path file, String text, Charset charset) throws IOException {
         writeBytes(file, text.getBytes(charset));
     }
 
@@ -109,7 +92,7 @@ public class FileUtils {
         Files.createDirectories(file.getParent());
         Files.write(file, data);
     }
-    
+
     public static void deleteFile(File file) throws IOException {
         Files.delete(file.toPath());
     }

@@ -9,7 +9,7 @@
 
     <string name="open_options">修改渲染器设置</string>
 
-    <string name="clear_permission">重置使用文件夹的授权</string>
+    <string name="menu_item_about">关于</string>
 
     <string name="option_glsl_cache">最大 GLSL 缓存大小 (输入 -1 以禁用)</string>
     <string name="option_glsl_cache_helper">单位：兆字节（MB）</string>
@@ -42,6 +42,7 @@
 
     <string name="dialog_positive">确认</string>
     <string name="dialog_negative">取消</string>
+    <string name="dialog_github">GitHub 发布页</string>
 
     <string name="dialog_info">应用信息</string>
 
