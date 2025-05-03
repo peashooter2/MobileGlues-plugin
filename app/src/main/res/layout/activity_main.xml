@@ -43,7 +43,6 @@
                 android:layout_marginBottom="12dp"
                 android:hint="@string/option_glsl_cache"
                 app:counterEnabled="true"
-                app:counterMaxLength="3"
                 app:errorEnabled="true"
                 app:helperText="@string/option_glsl_cache_helper"
                 app:helperTextEnabled="true"
