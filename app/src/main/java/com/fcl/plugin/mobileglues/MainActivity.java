@@ -57,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActivityMainBinding binding;
     private MGConfig config = null;
     private FolderPermissionManager folderPermissionManager;
-
+    private boolean isSpinnerInitialized = false;
+    
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,6 +126,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void showOptions() {
         try {
+            isSpinnerInitialized = false;
+            binding.spinnerAngle.setOnItemSelectedListener(null);
+            binding.spinnerNoError.setOnItemSelectedListener(null);
+            binding.spinnerMultidrawMode.setOnItemSelectedListener(null);
+            binding.angleClearWorkaround.setOnItemSelectedListener(null);
+            binding.switchExtGl43.setOnCheckedChangeListener(null);
+            binding.switchExtCs.setOnCheckedChangeListener(null);
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
@@ -191,6 +199,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             });
             binding.openOptions.setVisibility(View.GONE);
             binding.optionLayout.setVisibility(View.VISIBLE);
+
+            binding.spinnerAngle.setOnItemSelectedListener(this);
+            binding.spinnerNoError.setOnItemSelectedListener(this);
+            binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
+            binding.angleClearWorkaround.setOnItemSelectedListener(this);
+            binding.switchExtGl43.setOnCheckedChangeListener(this);
+            binding.switchExtCs.setOnCheckedChangeListener(this);
+            isSpinnerInitialized = true;
+
         } catch (IOException e) {
             Logger.getLogger("MG").log(Level.SEVERE, "Failed to load config! Exception: ", e.getCause());
             Toast.makeText(this, getString(R.string.warning_load_failed), Toast.LENGTH_SHORT).show();
@@ -273,7 +290,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if (!isSpinnerInitialized)
+            return;
+        
         if (adapterView == binding.spinnerAngle && config != null) {
+            int previous = config.getEnableANGLE();
+            if (i == previous) {
+                return;
+            }
+
             try {
                 if (i == 3 && isAdreno740()) {
                     new MaterialAlertDialogBuilder(this)
@@ -287,7 +312,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
                                 }
                             })
-                            .setNegativeButton(getString(R.string.dialog_negative), (dialog, which) -> binding.spinnerAngle.setSelection(config.getEnableANGLE()))
+                            .setNegativeButton(getString(R.string.dialog_negative), (dialog, which) -> {
+                                isSpinnerInitialized = false;
+                                binding.spinnerAngle.setSelection(config.getEnableANGLE());
+                                isSpinnerInitialized = true;
+                            })
+                            .setCancelable(false)
                             .show();
                 } else {
                     config.setEnableANGLE(i);
@@ -318,7 +348,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if (adapterView == binding.angleClearWorkaround && config != null) {
             try {
-                config.setAngleDepthClearFixMode(i);
+                int previous = config.getAngleDepthClearFixMode();
+                if (i == previous) {
+                    return;
+                }
+                if (i >= 1) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle(getString(R.string.dialog_title_warning))
+                            .setMessage(getString(R.string.warning_enabling_angle_clear_workaround))
+                            .setPositiveButton(getString(R.string.dialog_positive), (dialog, which) -> {
+                                try {
+                                    config.setAngleDepthClearFixMode(i);
+                                } catch (IOException e) {
+                                    Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                                    Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.dialog_negative), (dialog, which) -> {
+                                isSpinnerInitialized = false;
+                                binding.angleClearWorkaround.setSelection(config.getAngleDepthClearFixMode());
+                                isSpinnerInitialized = true;
+                            })
+                            .setCancelable(false)
+                            .show();
+                } else {
+                    config.setAngleDepthClearFixMode(i);
+                }
             } catch (IOException e) {
                 Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
                 Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
