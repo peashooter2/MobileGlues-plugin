@@ -94,6 +94,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter<String> multidrawModeAdapter = new ArrayAdapter<>(this, R.layout.spinner, multidrawModeOptions);
         binding.spinnerMultidrawMode.setAdapter(multidrawModeAdapter);
 
+        ArrayList<String> angleClearWorkaroundOptions = new ArrayList<>();
+        angleClearWorkaroundOptions.add(getString(R.string.option_angle_clear_workaround_disable));
+        angleClearWorkaroundOptions.add(getString(R.string.option_angle_clear_workaround_enable_1));
+        ArrayAdapter<String> angleClearWorkaroundAdapter = new ArrayAdapter<>(this, R.layout.spinner, angleClearWorkaroundOptions);
+        binding.angleClearWorkaround.setAdapter(angleClearWorkaroundAdapter);
+
         binding.openOptions.setOnClickListener(view -> checkPermission());
     }
 
@@ -122,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 0, 32, 0);
+                config = new MGConfig(0, 0, 0, 0, 32, 0, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -136,12 +142,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerAngle.setSelection(config.getEnableANGLE());
             binding.spinnerNoError.setSelection(config.getEnableNoError());
             binding.spinnerMultidrawMode.setSelection(config.getMultidrawMode());
+            binding.angleClearWorkaround.setSelection(config.getAngleDepthClearFixMode());
             binding.switchExtGl43.setChecked(config.getEnableExtGL43() == 1);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
             binding.spinnerNoError.setOnItemSelectedListener(this);
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
+            binding.angleClearWorkaround.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
             binding.inputMaxGlslCacheSize.addTextChangedListener(new TextWatcher() {
@@ -244,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 0, 32, 0);
+                            if (config == null) config = new MGConfig(0, 0, 0, 0, 32, 0, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
@@ -302,6 +310,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (adapterView == binding.spinnerMultidrawMode && config != null) {
             try {
                 config.setMultidrawMode(i);
+            } catch (IOException e) {
+                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
+                Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (adapterView == binding.angleClearWorkaround && config != null) {
+            try {
+                config.setAngleDepthClearFixMode(i);
             } catch (IOException e) {
                 Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
                 Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
