@@ -18,19 +18,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class MGConfig {
-
     private int enableANGLE;
     private int enableNoError;
     private int enableExtGL43;
+    private int enableExtTimerQuery;
     private int enableExtComputeShader;
     private int maxGlslCacheSize;
     private int multidrawMode;
     private int angleDepthClearFixMode;
 
-    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtComputeShader, int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode) {
+    public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, int enableExtTimerQuery, int enableExtComputeShader, int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode) {
         this.enableANGLE = enableANGLE;
         this.enableNoError = enableNoError;
         this.enableExtGL43 = enableExtGL43;
+        this.enableExtTimerQuery = enableExtTimerQuery;
         this.enableExtComputeShader = enableExtComputeShader;
         this.maxGlslCacheSize = maxGlslCacheSize;
         this.multidrawMode = multidrawMode;
@@ -78,6 +79,15 @@ public class MGConfig {
 
     public void setEnableNoError(int enableNoError) throws IOException {
         this.enableNoError = enableNoError;
+        saveConfig();
+    }
+
+    public int getEnableExtTimerQuery() {
+        return enableExtTimerQuery;
+    }
+
+    public void setEnableExtTimerQuery(int enableExtTimerQuery) throws IOException {
+        this.enableExtTimerQuery = enableExtTimerQuery;
         saveConfig();
     }
 

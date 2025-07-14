@@ -133,10 +133,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.angleClearWorkaround.setOnItemSelectedListener(null);
             binding.switchExtGl43.setOnCheckedChangeListener(null);
             binding.switchExtCs.setOnCheckedChangeListener(null);
+            binding.switchExtTimerQuery.setOnCheckedChangeListener(null);
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 0, 32, 0, 0);
+                config = new MGConfig(0, 0, 0, 1, 0, 32, 0, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -152,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerMultidrawMode.setSelection(config.getMultidrawMode());
             binding.angleClearWorkaround.setSelection(config.getAngleDepthClearFixMode());
             binding.switchExtGl43.setChecked(config.getEnableExtGL43() == 1);
+            binding.switchExtTimerQuery.setChecked(config.getEnableExtTimerQuery() == 0);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
@@ -159,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
             binding.angleClearWorkaround.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
+            binding.switchExtTimerQuery.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
             binding.inputMaxGlslCacheSize.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -205,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
             binding.angleClearWorkaround.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
+            binding.switchExtTimerQuery.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
             isSpinnerInitialized = true;
 
@@ -269,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 0, 32, 0, 0);
+                            if (config == null) config = new MGConfig(0, 0, 0, 1, 0, 32, 0, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
@@ -438,6 +442,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
                 }
             }
+        }
+		if (compoundButton == binding.switchExtTimerQuery && config != null) {
+			try {
+				config.setEnableExtTimerQuery(isChecked ? 0 : 1); // disable (ui) -> enable (json)
+			} catch (IOException e) {
+				Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+				Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+			}
         }
     }
 

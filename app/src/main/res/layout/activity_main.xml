@@ -137,6 +137,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/option_ext_cs"
+                app:layout_constraintBottom_toTopOf="@+id/switch_ext_timer_query" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_ext_timer_query"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/option_ext_timer_query"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
