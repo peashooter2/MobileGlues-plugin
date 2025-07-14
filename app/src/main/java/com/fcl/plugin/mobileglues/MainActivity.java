@@ -50,6 +50,22 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import androidx.documentfile.provider.DocumentFile;
+import com.fcl.plugin.mobileglues.utils.FileUtils;
+
+import android.os.Environment;
+import android.os.Handler;
+import android.util.Log;
+import java.util.List;
+import android.content.UriPermission;
+import java.util.Objects;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.CountDownTimer;
+import android.os.Message;
+import android.widget.Button;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     private static final int REQUEST_CODE_SAF = 2000;
     public static Uri MGDirectoryUri;
@@ -103,26 +119,189 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         binding.openOptions.setOnClickListener(view -> checkPermission());
     }
+	
+	private boolean hasMgDirectoryAccess() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        return MGDirectoryUri != null;
+    } else {
+        return ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+}
 
     @Override
     protected void onResume() {
         super.onResume();
         checkPermissionSilently();
+		invalidateOptionsMenu();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+		getMenuInflater().inflate(R.menu.menu_main, menu);
+		
+		MenuItem removeItem = menu.findItem(R.id.action_remove);
+		if (removeItem != null) {
+			removeItem.setEnabled(hasMgDirectoryAccess());
+		}
+		
+		return true;
+	}
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_about) {
             new AppInfoDialogBuilder(MainActivityContext).show();
             return true;
+        } else if (item.getItemId() == R.id.action_remove) { 
+            showRemoveConfirmationDialog();
+            return true;
         } else return super.onOptionsItemSelected(item);
     }
+	
+	private void showRemoveConfirmationDialog() {
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+	
+		builder.setTitle("移除 MobileGlues 相关文件")
+			.setMessage("这将删除 MobileGlues 的所有配置文件、缓存文件和日志，并移除文件夹访问权限。此操作不可逆，确定继续吗？")
+			.setNegativeButton("取消", null);
+	
+		androidx.appcompat.app.AlertDialog dialog = builder.create();
+	
+		final int cooldownSeconds = 10;
+		final int[] remainingSeconds = {cooldownSeconds};
+	
+		dialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, which) -> {
+			removeMobileGluesCompletely();
+		});
+	
+		dialog.setOnShowListener(dialogInterface -> {
+			Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+			
+			positiveButton.setText("确定 (" + remainingSeconds[0] + " 秒)");
+			positiveButton.setEnabled(false);
+			
+			new CountDownTimer(cooldownSeconds * 1000, 1000) {
+				public void onTick(long millisUntilFinished) {
+					remainingSeconds[0] = (int) (millisUntilFinished / 1000);
+					positiveButton.setText("确定 (" + remainingSeconds[0] + " 秒)");
+				}
+	
+				public void onFinish() {
+					positiveButton.setText("确定");
+					positiveButton.setTextColor(ContextCompat.getColor(MainActivityContext, android.R.color.holo_red_dark));
+					positiveButton.setEnabled(true);
+				}
+			}.start();
+		});
+	
+		dialog.show();
+	}	
+
+    private void removeMobileGluesCompletely() {
+        try {
+            if (config != null) {
+                config.deleteConfig(this);
+            }
+            deleteFileIfExists("glsl_cache.tmp");
+            deleteFileIfExists("latest.log");
+            
+            checkAndDeleteEmptyDirectory();
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && MGDirectoryUri != null) {
+                releaseSafPermissions();
+            }
+            
+            resetApplicationState();
+            
+			showFinalDialog();
+            
+        } catch (Exception e) {
+            Logger.getLogger("MG").log(Level.SEVERE, "移除失败: ", e);
+            Toast.makeText(this, "移除失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+	private void showFinalDialog() {
+		new MaterialAlertDialogBuilder(this)
+				.setTitle("移除完成")
+				.setMessage("MobileGlues 相关文件已完全移除。\n若需进一步完全在您的设备上移除 MobileGlues，请卸载此软件。")
+				.setCancelable(false)
+				.setPositiveButton("退出", (dialog, which) -> {
+					finishAffinity();
+					System.exit(0);
+				})
+            .show();
+	}
+
+    private void deleteFileIfExists(String fileName) {
+		try {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				if (MGDirectoryUri != null) {
+					DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
+					if (dir != null) {
+						DocumentFile file = dir.findFile(fileName);
+						if (file != null && file.exists()) {
+							DocumentsContract.deleteDocument(getContentResolver(), file.getUri());
+						}
+					}
+				}
+			} else {
+				File file = new File(Environment.getExternalStorageDirectory(), "MG/" + fileName);
+				if (file.exists()) {
+					FileUtils.deleteFile(file);
+				}
+			}
+		} catch (Exception e) {
+			Log.w("MG", "删除文件失败: " + fileName, e);
+		}
+	}	
+
+    private void checkAndDeleteEmptyDirectory() {
+		try {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				if (MGDirectoryUri != null) {
+					DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
+					if (dir != null && dir.listFiles().length == 0) {
+						DocumentsContract.deleteDocument(getContentResolver(), dir.getUri());
+					}
+				}
+			} else {
+				File mgDir = new File(Environment.getExternalStorageDirectory(), "MG");
+				if (mgDir.exists() && mgDir.isDirectory()) {
+					File[] files = mgDir.listFiles();
+					if (files != null && files.length == 0) {
+						FileUtils.deleteFile(mgDir);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.w("MG", "删除目录失败", e);
+		}
+	}
+
+    private void releaseSafPermissions() {
+        try {
+            List<UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
+            for (UriPermission permission : permissions) {
+                if (permission.getUri().equals(MGDirectoryUri)) {
+                    getContentResolver().releasePersistableUriPermission(
+                        MGDirectoryUri, 
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    );
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger("MG").log(Level.WARNING, "移除 SAF 权限失败", e);
+        }
+    }
+
+    private void resetApplicationState() {
+        MGDirectoryUri = null;
+        config = null;
+        folderPermissionManager = new FolderPermissionManager(this);
+        hideOptions();
+    }
+
 
     private void showOptions() {
         try {
@@ -224,24 +403,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void checkPermissionSilently() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MGDirectoryUri = folderPermissionManager.getMGFolderUri();
-
-            MGConfig config = MGConfig.loadConfig(this);
-            if (config != null && MGDirectoryUri != null) {
-                showOptions();
-            } else {
-                hideOptions();
-            }
-        } else {
-            if (ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                showOptions();
-            } else {
-                hideOptions();
-            }
-        }
-    }
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			MGDirectoryUri = folderPermissionManager.getMGFolderUri();
+	
+			MGConfig config = MGConfig.loadConfig(this);
+			if (config != null && MGDirectoryUri != null) {
+				showOptions();
+			} else {
+				hideOptions();
+			}
+		} else {
+			if (ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+					&& ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+				showOptions();
+			} else {
+				hideOptions();
+			}
+		}
+	}
 
     private void checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) new MaterialAlertDialogBuilder(this)

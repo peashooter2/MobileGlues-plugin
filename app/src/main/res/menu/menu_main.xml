@@ -6,4 +6,9 @@
         android:icon="@drawable/outline_info_24"
         android:title="@string/menu_item_about"
         app:showAsAction="always" />
+	<item
+		android:id="@+id/action_remove"
+		android:title="移除 MobileGlues 相关文件"
+		app:showAsAction="never"
+		android:enabled="false" />
 </menu>

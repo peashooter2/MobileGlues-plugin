@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import android.os.Environment;
 
 public class MGConfig {
     private int enableANGLE;
@@ -179,4 +180,18 @@ public class MGConfig {
             FileUtils.writeText(new File(Constants.CONFIG_FILE_PATH), configStr);
         }
     }
+	
+	public void deleteConfig(Context context) throws IOException {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			if (MainActivity.MGDirectoryUri != null) {
+				FileUtils.deleteFileViaSAF(context, MainActivity.MGDirectoryUri, "config.json");
+			}
+		} else {
+			File configFile = new File(Environment.getExternalStorageDirectory(), "MG/config.json");
+			if (configFile.exists()) {
+				FileUtils.deleteFile(configFile);
+			}
+		}
+	}
+
 }

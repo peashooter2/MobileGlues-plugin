@@ -18,6 +18,15 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+import java.util.Objects;
+import androidx.documentfile.provider.DocumentFile;
+import android.provider.DocumentsContract;
+
+import com.fcl.plugin.mobileglues.MainActivity;
 
 public class FileUtils {
     public static String readText(Context context, Uri uri) throws IOException {
@@ -38,7 +47,7 @@ public class FileUtils {
         final Uri fileUri = DocumentsContract.buildDocumentUriUsingTree(directoryUri, baseDocId + "/" + fileName);
 
         try (OutputStream out = resolver.openOutputStream(fileUri, "wt");
-             BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
+            BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
             bufferedOut.write(text.getBytes(StandardCharsets.UTF_8));
             return;
         } catch (IOException | RuntimeException e) {
@@ -94,7 +103,44 @@ public class FileUtils {
     }
 
     public static void deleteFile(File file) throws IOException {
+        if (file.isDirectory()) {
+            for (File subFile : Objects.requireNonNull(file.listFiles())) {
+                deleteFile(subFile);
+            }
+        }
         Files.delete(file.toPath());
     }
+	
+	private void deleteAppFiles() {
+		Uri mgDirUri = MainActivity.MGDirectoryUri;
+		File mgDir = new File(Environment.getExternalStorageDirectory(), "MG");
+		File config = new File(mgDir, "config.json");
+		File cache = new File(mgDir, "glsl_cache.tmp");
+		File log   = new File(mgDir, "latest.log");
+		try {
+			if (config.exists()) config.delete();
+			if (cache .exists()) cache .delete();
+			if (log   .exists()) log   .delete();
+			if (mgDir.isDirectory() && mgDir.list().length == 0) {
+				mgDir.delete();
+			}
+		} catch (Exception e) {
+			
+		}
+	}
+	
 
+	public static void deleteFileViaSAF(Context context, Uri directoryUri, String fileName) {
+		try {
+			DocumentFile dir = DocumentFile.fromTreeUri(context, directoryUri);
+			if (dir != null) {
+				DocumentFile file = dir.findFile(fileName);
+				if (file != null && file.exists()) {
+					DocumentsContract.deleteDocument(context.getContentResolver(), file.getUri());
+				}
+			}
+		} catch (Exception e) {
+			
+		}
+	}
 }
