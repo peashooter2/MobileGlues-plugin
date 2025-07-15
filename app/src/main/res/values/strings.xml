@@ -17,8 +17,8 @@
     <string name="option_glsl_cache">Max GLSL Cache Size (enter -1 to disable)</string>
     <string name="option_glsl_cache_helper">Unit: Megabytes (MB)</string>
     <string name="option_angle">Use ANGLE as OpenGL ES driver</string>
-    <string name="option_angle_disable_if_possible">Disable if possible</string>
-    <string name="option_angle_enable_if_possible">Enable if possible</string>
+    <string name="option_angle_disable_if_possible">Prefer Disabled</string>
+    <string name="option_angle_enable_if_possible">Prefer Enabled</string>
     <string name="option_angle_disable">Disable</string>
     <string name="option_angle_enable">Enable</string>
 
