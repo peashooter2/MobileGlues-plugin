@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(0, 0, 0, 1, 0, 32, 0, 0);
+                config = new MGConfig(1, 0, 0, 0, 0, 32, 0, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -514,7 +514,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(0, 0, 0, 1, 0, 32, 0, 0);
+                            if (config == null) config = new MGConfig(1, 0, 0, 0, 0, 32, 0, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
