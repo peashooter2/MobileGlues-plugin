@@ -60,11 +60,19 @@ import java.util.List;
 import android.content.UriPermission;
 import java.util.Objects;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.CountDownTimer;
 import android.os.Message;
 import android.widget.Button;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import android.os.Handler;
+import android.os.Looper;
+import androidx.annotation.StringRes;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
     private static final int REQUEST_CODE_SAF = 2000;
@@ -199,28 +207,83 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 	}	
 
     private void removeMobileGluesCompletely() {
-        try {
-            if (config != null) {
-                config.deleteConfig(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(
+            this,
+            com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
+        );
+        View view = LayoutInflater.from(this)
+                    .inflate(R.layout.progress_dialog_md3, null);
+        ProgressBar progressBar = view.findViewById(R.id.progress_bar);
+        TextView  progressText = view.findViewById(R.id.progress_text);
+        builder.setTitle(R.string.removing_mobileglues)
+               .setView(view)
+               .setCancelable(false);
+
+        final androidx.appcompat.app.AlertDialog progressDialog = builder.create();
+        runOnUiThread(progressDialog::show);
+
+        new Thread(() -> {
+            try {
+                final int[] step = {0};
+
+                runOnUiThread(() -> {
+                    progressText.setText(R.string.deleting_config);
+                    progressBar.setProgress((step[0] + 1) * 20);
+                });
+                if (config != null) {
+                    config.deleteConfig(MainActivity.this);
+                }
+
+                step[0]++;
+                runOnUiThread(() -> {
+                    progressText.setText(R.string.deleting_cache);
+                    progressBar.setProgress((step[0] + 1) * 20);
+                });
+                deleteFileIfExists("glsl_cache.tmp");
+
+                step[0]++;
+                runOnUiThread(() -> {
+                    progressText.setText(R.string.deleting_logs);
+                    progressBar.setProgress((step[0] + 1) * 20);
+                });
+                deleteFileIfExists("latest.log");
+
+                step[0]++;
+                runOnUiThread(() -> {
+                    progressText.setText(R.string.cleaning_directory);
+                    progressBar.setProgress((step[0] + 1) * 20);
+                });
+                checkAndDeleteEmptyDirectory();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && MGDirectoryUri != null) {
+                    step[0]++;
+                    runOnUiThread(() -> {
+                        progressText.setText(R.string.removing_permissions);
+                        progressBar.setProgress((step[0] + 1) * 20);
+                    });
+                    releaseSafPermissions();
+                }
+
+                runOnUiThread(() -> {
+					resetApplicationState();
+                    progressDialog.dismiss();
+                    showFinalDialog();
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(
+                        MainActivity.this,
+                        getString(R.string.remove_failed, e.getMessage()),
+                        Toast.LENGTH_SHORT
+                    ).show();
+                });
             }
-            deleteFileIfExists("glsl_cache.tmp");
-            deleteFileIfExists("latest.log");
-            
-            checkAndDeleteEmptyDirectory();
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && MGDirectoryUri != null) {
-                releaseSafPermissions();
-            }
-            
-            resetApplicationState();
-            
-			showFinalDialog();
-            
-        } catch (Exception e) {
-            Logger.getLogger("MG").log(Level.SEVERE, "移除失败: ", e);
-            Toast.makeText(this, getString(R.string.remove_failed, e.getMessage()), Toast.LENGTH_SHORT).show();
-        }
+        }).start();
     }
+
+	
 	private void showFinalDialog() {
 		new MaterialAlertDialogBuilder(this)
 				.setTitle(R.string.remove_complete_title)
@@ -301,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         folderPermissionManager = new FolderPermissionManager(this);
         hideOptions();
     }
-
 
     private void showOptions() {
         try {
