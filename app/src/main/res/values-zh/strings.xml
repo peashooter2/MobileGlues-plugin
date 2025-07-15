@@ -85,6 +85,6 @@
 	<string name="removing_permissions">正在移除权限...</string>
     <string name="remove_failed">移除失败: %s</string>
     <string name="remove_complete_title">移除完成</string>
-    <string name="remove_complete_message">MobileGlues 相关文件已完全移除。\n若需进一步完全在您的设备上移除 MobileGlues，请卸载此软件。</string>
+    <string name="remove_complete_message">MobileGlues 相关文件已完全移除。\n若需进一步在您的设备上完全移除 MobileGlues，请卸载此软件。</string>
     <string name="exit">退出</string>
 </resources>
