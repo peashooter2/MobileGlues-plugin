@@ -66,7 +66,7 @@
     <string name="warning_save_failed">无法保存 MG 配置文件！</string>
     <string name="warning_path_selection_error">路径错误！请选择：\n%s\n但您选择了：\n%s</string>
 
-    <string name="menu_item_remove">移除</string>
+    <string name="menu_item_remove">移除 MobileGlues 相关文件</string>
     <string name="remove_mg_files_title">移除 MobileGlues 相关文件</string>
     <string name="remove_mg_files_message">此操作将彻底删除与 MobileGlues 相关的所有文件。具体包括：\n\n
  • <b>所有配置文件：</b> 任何您自定义的设置、偏好选项以及可能的应用运行所需的配置文件将被移除。\n

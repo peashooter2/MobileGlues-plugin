@@ -68,7 +68,7 @@
     <string name="warning_save_failed">Failed to save MG config!</string>
     <string name="warning_path_selection_error">Path error! Please select: \n%s\nbut you selected:\n%s</string>
 
-    <string name="menu_item_remove">Remove</string>
+    <string name="menu_item_remove">Remove MobileGlues related files</string>
     <string name="remove_mg_files_title">Remove MobileGlues related files</string>
     <string name="remove_mg_files_message">This action will completely delete all files associated with MobileGlues. This includes:\n\n
  • <b>All configuration files:</b> Any of your custom settings, preferences, and possible configuration files required for the application to run will be removed.\n
