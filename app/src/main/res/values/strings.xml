@@ -67,4 +67,14 @@
     <string name="warning_load_failed">Failed to load MG config!</string>
     <string name="warning_save_failed">Failed to save MG config!</string>
     <string name="warning_path_selection_error">Path error! Please select: \n%s\nbut you selected:\n%s</string>
+
+    <string name="menu_item_remove">Remove</string>
+    <string name="remove_mg_files_title">Remove MobileGlues related files</string>
+    <string name="remove_mg_files_message">This will delete all configuration files, cache files, and logs for MobileGlues, and remove folder access permissions. This action is irreversible. Are you sure you want to continue?</string>
+    <string name="ok">OK</string>
+    <string name="ok_with_countdown">OK (%d s)</string>
+    <string name="remove_failed">Remove failed: %s</string>
+    <string name="remove_complete_title">Removal Complete</string>
+    <string name="remove_complete_message">MobileGlues related files have been completely removed.\nIf you need to completely remove MobileGlues from your device, please uninstall this software.</string>
+    <string name="exit">Exit</string>
 </resources>

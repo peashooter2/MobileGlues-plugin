@@ -162,33 +162,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 	private void showRemoveConfirmationDialog() {
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
 	
-		builder.setTitle("移除 MobileGlues 相关文件")
-			.setMessage("这将删除 MobileGlues 的所有配置文件、缓存文件和日志，并移除文件夹访问权限。此操作不可逆，确定继续吗？")
-			.setNegativeButton("取消", null);
+		builder.setTitle(R.string.remove_mg_files_title)
+			.setMessage(R.string.remove_mg_files_message)
+			.setNegativeButton(R.string.dialog_negative, null);
 	
 		androidx.appcompat.app.AlertDialog dialog = builder.create();
 	
 		final int cooldownSeconds = 10;
 		final int[] remainingSeconds = {cooldownSeconds};
 	
-		dialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", (dialogInterface, which) -> {
+		dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, which) -> {
 			removeMobileGluesCompletely();
 		});
 	
 		dialog.setOnShowListener(dialogInterface -> {
 			Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
 			
-			positiveButton.setText("确定 (" + remainingSeconds[0] + " 秒)");
+			positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
 			positiveButton.setEnabled(false);
 			
 			new CountDownTimer(cooldownSeconds * 1000, 1000) {
 				public void onTick(long millisUntilFinished) {
 					remainingSeconds[0] = (int) (millisUntilFinished / 1000);
-					positiveButton.setText("确定 (" + remainingSeconds[0] + " 秒)");
+					positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
 				}
 	
 				public void onFinish() {
-					positiveButton.setText("确定");
+					positiveButton.setText(R.string.ok);
 					positiveButton.setTextColor(ContextCompat.getColor(MainActivityContext, android.R.color.holo_red_dark));
 					positiveButton.setEnabled(true);
 				}
@@ -218,15 +218,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             
         } catch (Exception e) {
             Logger.getLogger("MG").log(Level.SEVERE, "移除失败: ", e);
-            Toast.makeText(this, "移除失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.remove_failed, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
 	private void showFinalDialog() {
 		new MaterialAlertDialogBuilder(this)
-				.setTitle("移除完成")
-				.setMessage("MobileGlues 相关文件已完全移除。\n若需进一步完全在您的设备上移除 MobileGlues，请卸载此软件。")
+				.setTitle(R.string.remove_complete_title)
+				.setMessage(R.string.remove_complete_message)
 				.setCancelable(false)
-				.setPositiveButton("退出", (dialog, which) -> {
+				.setPositiveButton(R.string.exit, (dialog, which) -> {
 					finishAffinity();
 					System.exit(0);
 				})
