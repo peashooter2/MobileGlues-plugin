@@ -6,7 +6,7 @@
     <string name="info_launcher" translatable="false">Fold Craft Launcher (>=1.2.0.5)\nZalith Launcher (>=1.4.0)\nPojav Glow·Worm (>=20250211)</string>
 
     <string name="view_version">Version: </string>
-    <string name="view_author">Author: </string>
+    <string name="view_author">Developers: </string>
     <string name="view_copyright">License: </string>
     <string name="view_launcher">Compatible Launchers: </string>
 

@@ -3,7 +3,7 @@
     <string name="app_name">MobileGlues</string>
 
     <string name="view_version">版本：</string>
-    <string name="view_author">作者：</string>
+    <string name="view_author">开发者：</string>
     <string name="view_copyright">开源许可证：</string>
     <string name="view_launcher">兼容的启动器：</string>
 
