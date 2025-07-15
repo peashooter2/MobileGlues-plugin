@@ -73,7 +73,7 @@
  • <b>缓存文件：</b> MobileGlues 运行时生成的 GLSL 缓存（用于加快加载速度）将被清空。\n
  • <b>日志文件：</b> MobileGlues 运行过程中产生的日志文件将被删除。\n
  • <b>文件夹访问权限：</b> MobileGlues 应用当前拥有的对设备存储空间中特定文件夹的读写访问权限将被撤销。\n\n
-请注意，此操作是<b><font color="@android:color/holo_red_dark">不可逆</font></b>的。 一旦您点击“确定”，上述所有文件将被永久删除，无法恢复。如果您将在未来重新使用MobileGlues，您将需要重新配置MobileGlues。\n\n
+请注意，此操作是<b><font color="@android:color/holo_red_dark">不可逆</font></b>的。 一旦您点击“确定”，上述所有文件将被永久删除，无法恢复。如果您在未来要重新使用MobileGlues，您将需要重新配置MobileGlues。\n\n
 <b><font color="@android:color/holo_red_dark">确定要继续吗？</font></b></string>
     <string name="ok">确定</string>
     <string name="ok_with_countdown">确定 (%d 秒)</string>
