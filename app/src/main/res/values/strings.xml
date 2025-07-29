@@ -47,6 +47,14 @@
     <string name="option_ext_gl43">Enable Incomplete \'OpenGL43\' Extension</string>
     <string name="option_ext_cs">Enable Incomplete \'ARB_compute_shader\' Extension</string>
     <string name="option_ext_timer_query">Disable Recommended \'timer_query\' Extension</string>
+    <string name="option_ext_direct_state_access">Disable Advanced \'direct_state_access\' Extension</string>
+    
+    <string name="option_custom_gl_version">Custom target OpenGL Version</string>
+    <string name="warning_enabling_custom_gl_version"><b><big>Important Notice:</big></b>\n\n
+ • Setting a custom OpenGL version may <b><font color="@android:color/holo_red_dark">cause game crashes or rendering issues — proceed with caution</font></b>!\n
+ • Once you enable this feature, we will <b><font color="@android:color/holo_red_dark">no longer accept</font></b> any bug reports related to additional issues! Before reporting problems, please make sure to <b><font color="@android:color/holo_red_dark">disable this feature</font></b>!\n
+ • For stability, <b>do not enable this feature</b> unless absolutely necessary (e.g., mods requiring specific OpenGL versions)!</string>
+
 
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
@@ -79,12 +87,12 @@ Please note, this action is <b><font color="@android:color/holo_red_dark">irreve
 <b><font color="@android:color/holo_red_dark">Are you sure you want to continue?</font></b></string>
     <string name="ok">OK</string>
     <string name="ok_with_countdown">OK (%d s)</string>
-	<string name="removing_mobileglues">Removing MobileGlues...</string>
-	<string name="deleting_config">Deleting config files...</string>
-	<string name="deleting_cache">Deleting cache files...</string>
-	<string name="deleting_logs">Deleting log files...</string>
-	<string name="cleaning_directory">Cleaning directory...</string>
-	<string name="removing_permissions">Removing permissions...</string>
+	<string name="removing_mobileglues">Removing MobileGlues…</string>
+	<string name="deleting_config">Deleting config files…</string>
+	<string name="deleting_cache">Deleting cache files…</string>
+	<string name="deleting_logs">Deleting log files…</string>
+	<string name="cleaning_directory">Cleaning directory…</string>
+	<string name="removing_permissions">Removing permissions…</string>
     <string name="remove_failed">Remove failed: %s</string>
     <string name="remove_complete_title">Removal Complete</string>
     <string name="remove_complete_message">MobileGlues related files have been completely removed.\nIf you need to completely remove MobileGlues from your device, please uninstall this software.</string>
