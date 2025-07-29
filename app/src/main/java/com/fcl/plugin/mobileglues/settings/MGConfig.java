@@ -30,10 +30,11 @@ public class MGConfig {
     private int maxGlslCacheSize;
     private int multidrawMode;
     private int angleDepthClearFixMode;
+    private int customGLVersion;
 
     public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, 
                     int enableExtTimerQuery, int enableExtComputeShader, int enableExtDirectStateAccess, 
-                    int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode) {
+                    int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode, int customGLVersion) {
         this.enableANGLE = enableANGLE;
         this.enableNoError = enableNoError;
         this.enableExtGL43 = enableExtGL43;
@@ -43,6 +44,7 @@ public class MGConfig {
         this.maxGlslCacheSize = maxGlslCacheSize;
         this.multidrawMode = multidrawMode;
         this.angleDepthClearFixMode = angleDepthClearFixMode;
+        this.customGLVersion = customGLVersion;
     }
 
     public static MGConfig loadConfig(Context context) {
@@ -161,6 +163,15 @@ public class MGConfig {
 
     public void setAngleDepthClearFixMode(int angleDepthClearFixMode) throws IOException {
         this.angleDepthClearFixMode = angleDepthClearFixMode;
+        saveConfig();
+    }
+
+    public int getCustomGLVersion() {
+        return customGLVersion;
+    }
+
+    public void setCustomGLVersion(int customGLVersion) throws IOException {
+        this.customGLVersion = customGLVersion;
         saveConfig();
     }
 

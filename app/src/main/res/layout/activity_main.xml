@@ -106,7 +106,24 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:minHeight="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/text_angle_clear_workaround" />
+                app:layout_constraintBottom_toTopOf="@+id/text_option_gl_version" />
+            
+            <TextView
+                android:id="@+id/text_option_gl_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/option_custom_gl_version"
+                app:layout_constraintBottom_toTopOf="@+id/spinner_custom_gl_version"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Spinner
+                android:id="@+id/spinner_custom_gl_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:minHeight="48dp"
+                app:layout_constraintBottom_toTopOf="@+id/text_angle_clear_workaround" /> 
 
             <TextView
                 android:id="@+id/text_angle_clear_workaround"
