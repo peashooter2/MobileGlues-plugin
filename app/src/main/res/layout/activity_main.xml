@@ -24,8 +24,10 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:ignore="SpeakableTextPresentCheck">
 
@@ -33,8 +35,7 @@
             android:id="@+id/option_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:visibility="gone">
+            android:padding="8dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_max_glsl_cache_size_layout"
@@ -107,7 +108,7 @@
                 android:layout_margin="5dp"
                 android:minHeight="48dp"
                 app:layout_constraintBottom_toTopOf="@+id/text_option_gl_version" />
-            
+
             <TextView
                 android:id="@+id/text_option_gl_version"
                 android:layout_width="wrap_content"
@@ -123,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:minHeight="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/text_angle_clear_workaround" /> 
+                app:layout_constraintBottom_toTopOf="@+id/text_angle_clear_workaround" />
 
             <TextView
                 android:id="@+id/text_angle_clear_workaround"
