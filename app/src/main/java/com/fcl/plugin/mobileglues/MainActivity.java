@@ -6,7 +6,9 @@ import static java.sql.Types.NULL;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.opengl.EGL14;
@@ -16,18 +18,25 @@ import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -36,45 +45,39 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.fcl.plugin.mobileglues.databinding.ActivityMainBinding;
 import com.fcl.plugin.mobileglues.settings.FolderPermissionManager;
 import com.fcl.plugin.mobileglues.settings.MGConfig;
 import com.fcl.plugin.mobileglues.utils.Constants;
+import com.fcl.plugin.mobileglues.utils.FileUtils;
 import com.fcl.plugin.mobileglues.utils.ResultListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import androidx.documentfile.provider.DocumentFile;
-import com.fcl.plugin.mobileglues.utils.FileUtils;
-
-import android.os.Environment;
-import android.os.Handler;
-import android.util.Log;
-import java.util.List;
-import android.content.UriPermission;
-import java.util.Objects;
-
-import android.content.DialogInterface;
-import android.os.CountDownTimer;
-import android.os.Message;
-import android.widget.Button;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.StringRes;
-
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+    private static final Map<String, Integer> GL_VERSION_MAP = new LinkedHashMap<>() {{
+        put("Disabled", 0);
+        put("OpenGL 4.6", 46);
+        put("OpenGL 4.5", 45);
+        put("OpenGL 4.4", 44);
+        put("OpenGL 4.3", 43);
+        put("OpenGL 4.2", 42);
+        put("OpenGL 4.1", 41);
+        put("OpenGL 4.0", 40);
+        put("OpenGL 3.3", 33);
+        put("OpenGL 3.2", 32);
+    }};
+
     private static final int REQUEST_CODE_SAF = 2000;
     public static Uri MGDirectoryUri;
     public static Context MainActivityContext;
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private MGConfig config = null;
     private FolderPermissionManager folderPermissionManager;
     private boolean isSpinnerInitialized = false;
-    
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter<String> multidrawModeAdapter = new ArrayAdapter<>(this, R.layout.spinner, multidrawModeOptions);
         binding.spinnerMultidrawMode.setAdapter(multidrawModeAdapter);
 
+        addCustomGLVersionOptions();
+
         ArrayList<String> angleClearWorkaroundOptions = new ArrayList<>();
         angleClearWorkaroundOptions.add(getString(R.string.option_angle_clear_workaround_disable));
         angleClearWorkaroundOptions.add(getString(R.string.option_angle_clear_workaround_enable_1));
@@ -130,98 +135,103 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         binding.angleClearWorkaround.setAdapter(angleClearWorkaroundAdapter);
 
         binding.openOptions.setOnClickListener(view -> checkPermission());
+
+        // 设置约束布局的底边距为系统导航栏的高度
+        ViewGroup.MarginLayoutParams optionLayoutParams = (ViewGroup.MarginLayoutParams) binding.optionLayout.getLayoutParams();
+        getWindow().getDecorView().setOnApplyWindowInsetsListener((v, insets) -> {
+            optionLayoutParams.setMargins(0, 0, 0, insets.getSystemWindowInsetBottom());
+            return insets;
+        });
     }
-	
-	private boolean hasMgDirectoryAccess() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        return MGDirectoryUri != null;
-    } else {
-        return ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+
+    private boolean hasMgDirectoryAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return MGDirectoryUri != null;
+        } else {
+            return ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
     }
-}
 
     @Override
     protected void onResume() {
         super.onResume();
         checkPermissionSilently();
-		invalidateOptionsMenu();
+        invalidateOptionsMenu();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.menu_main, menu);
-		
-		MenuItem removeItem = menu.findItem(R.id.action_remove);
-		if (removeItem != null) {
-			removeItem.setEnabled(hasMgDirectoryAccess());
-		}
-		
-		return true;
-	}
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem removeItem = menu.findItem(R.id.action_remove);
+        if (removeItem != null) {
+            removeItem.setEnabled(hasMgDirectoryAccess());
+        }
+
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_about) {
             new AppInfoDialogBuilder(MainActivityContext).show();
             return true;
-        } else if (item.getItemId() == R.id.action_remove) { 
+        } else if (item.getItemId() == R.id.action_remove) {
             showRemoveConfirmationDialog();
             return true;
         } else return super.onOptionsItemSelected(item);
     }
-	
-	private void showRemoveConfirmationDialog() {
-		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-	
-		builder.setTitle(R.string.remove_mg_files_title)
-			.setMessage(R.string.remove_mg_files_message)
-			.setNegativeButton(R.string.dialog_negative, null);
-	
-		androidx.appcompat.app.AlertDialog dialog = builder.create();
-	
-		final int cooldownSeconds = 10;
-		final int[] remainingSeconds = {cooldownSeconds};
-	
-		dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, which) -> {
-			removeMobileGluesCompletely();
-		});
-	
-		dialog.setOnShowListener(dialogInterface -> {
-			Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-			
-			positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
-			positiveButton.setEnabled(false);
-			
-			new CountDownTimer(cooldownSeconds * 1000, 1000) {
-				public void onTick(long millisUntilFinished) {
-					remainingSeconds[0] = (int) (millisUntilFinished / 1000);
-					positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
-				}
-	
-				public void onFinish() {
-					positiveButton.setText(R.string.ok);
-					positiveButton.setTextColor(ContextCompat.getColor(MainActivityContext, android.R.color.holo_red_dark));
-					positiveButton.setEnabled(true);
-				}
-			}.start();
-		});
-	
-		dialog.show();
-	}	
+
+    private void showRemoveConfirmationDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+
+        builder.setTitle(R.string.remove_mg_files_title)
+                .setMessage(R.string.remove_mg_files_message)
+                .setNegativeButton(R.string.dialog_negative, null);
+
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+
+        final int cooldownSeconds = 10;
+        final int[] remainingSeconds = {cooldownSeconds};
+
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, which) -> removeMobileGluesCompletely());
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+
+            positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
+            positiveButton.setEnabled(false);
+
+            new CountDownTimer(cooldownSeconds * 1000, 1000) {
+                public void onTick(long millisUntilFinished) {
+                    remainingSeconds[0] = (int) (millisUntilFinished / 1000);
+                    positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
+                }
+
+                public void onFinish() {
+                    positiveButton.setText(R.string.ok);
+                    positiveButton.setTextColor(ContextCompat.getColor(MainActivityContext, android.R.color.holo_red_dark));
+                    positiveButton.setEnabled(true);
+                }
+            }.start();
+        });
+
+        dialog.show();
+    }
 
     private void removeMobileGluesCompletely() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(
-            this,
-            com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
+                this,
+                com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
         );
         View view = LayoutInflater.from(this)
-                    .inflate(R.layout.progress_dialog_md3, null);
+                .inflate(R.layout.progress_dialog_md3, null);
         ProgressBar progressBar = view.findViewById(R.id.progress_bar);
-        TextView  progressText = view.findViewById(R.id.progress_text);
+        TextView progressText = view.findViewById(R.id.progress_text);
         builder.setTitle(R.string.removing_mobileglues)
-               .setView(view)
-               .setCancelable(false);
+                .setView(view)
+                .setCancelable(false);
 
         final androidx.appcompat.app.AlertDialog progressDialog = builder.create();
         runOnUiThread(progressDialog::show);
@@ -269,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
 
                 runOnUiThread(() -> {
-					resetApplicationState();
+                    resetApplicationState();
                     progressDialog.dismiss();
                     showFinalDialog();
                 });
@@ -278,73 +288,73 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     Toast.makeText(
-                        MainActivity.this,
-                        getString(R.string.remove_failed, e.getMessage()),
-                        Toast.LENGTH_SHORT
+                            MainActivity.this,
+                            getString(R.string.remove_failed, e.getMessage()),
+                            Toast.LENGTH_SHORT
                     ).show();
                 });
             }
         }).start();
     }
 
-	
-	private void showFinalDialog() {
-		new MaterialAlertDialogBuilder(this)
-				.setTitle(R.string.remove_complete_title)
-				.setMessage(R.string.remove_complete_message)
-				.setCancelable(false)
-				.setPositiveButton(R.string.exit, (dialog, which) -> {
-					finishAffinity();
-					System.exit(0);
-				})
-            .show();
-	}
+
+    private void showFinalDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.remove_complete_title)
+                .setMessage(R.string.remove_complete_message)
+                .setCancelable(false)
+                .setPositiveButton(R.string.exit, (dialog, which) -> {
+                    finishAffinity();
+                    System.exit(0);
+                })
+                .show();
+    }
 
     private void deleteFileIfExists(String fileName) {
-		try {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				if (MGDirectoryUri != null) {
-					DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
-					if (dir != null) {
-						DocumentFile file = dir.findFile(fileName);
-						if (file != null && file.exists()) {
-							DocumentsContract.deleteDocument(getContentResolver(), file.getUri());
-						}
-					}
-				}
-			} else {
-				File file = new File(Environment.getExternalStorageDirectory(), "MG/" + fileName);
-				if (file.exists()) {
-					FileUtils.deleteFile(file);
-				}
-			}
-		} catch (Exception e) {
-			Log.w("MG", "删除文件失败: " + fileName, e);
-		}
-	}	
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (MGDirectoryUri != null) {
+                    DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
+                    if (dir != null) {
+                        DocumentFile file = dir.findFile(fileName);
+                        if (file != null && file.exists()) {
+                            DocumentsContract.deleteDocument(getContentResolver(), file.getUri());
+                        }
+                    }
+                }
+            } else {
+                File file = new File(Environment.getExternalStorageDirectory(), "MG/" + fileName);
+                if (file.exists()) {
+                    FileUtils.deleteFile(file);
+                }
+            }
+        } catch (Exception e) {
+            Log.w("MG", "删除文件失败: " + fileName, e);
+        }
+    }
 
     private void checkAndDeleteEmptyDirectory() {
-		try {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				if (MGDirectoryUri != null) {
-					DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
-					if (dir != null && dir.listFiles().length == 0) {
-						DocumentsContract.deleteDocument(getContentResolver(), dir.getUri());
-					}
-				}
-			} else {
-				File mgDir = new File(Environment.getExternalStorageDirectory(), "MG");
-				if (mgDir.exists() && mgDir.isDirectory()) {
-					File[] files = mgDir.listFiles();
-					if (files != null && files.length == 0) {
-						FileUtils.deleteFile(mgDir);
-					}
-				}
-			}
-		} catch (Exception e) {
-			Log.w("MG", "删除目录失败", e);
-		}
-	}
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (MGDirectoryUri != null) {
+                    DocumentFile dir = DocumentFile.fromTreeUri(this, MGDirectoryUri);
+                    if (dir != null && dir.listFiles().length == 0) {
+                        DocumentsContract.deleteDocument(getContentResolver(), dir.getUri());
+                    }
+                }
+            } else {
+                File mgDir = new File(Environment.getExternalStorageDirectory(), "MG");
+                if (mgDir.exists() && mgDir.isDirectory()) {
+                    File[] files = mgDir.listFiles();
+                    if (files != null && files.length == 0) {
+                        FileUtils.deleteFile(mgDir);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w("MG", "删除目录失败", e);
+        }
+    }
 
     private void releaseSafPermissions() {
         try {
@@ -352,8 +362,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             for (UriPermission permission : permissions) {
                 if (permission.getUri().equals(MGDirectoryUri)) {
                     getContentResolver().releasePersistableUriPermission(
-                        MGDirectoryUri, 
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            MGDirectoryUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     );
                 }
             }
@@ -375,14 +385,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.spinnerAngle.setOnItemSelectedListener(null);
             binding.spinnerNoError.setOnItemSelectedListener(null);
             binding.spinnerMultidrawMode.setOnItemSelectedListener(null);
+            binding.spinnerCustomGlVersion.setOnItemSelectedListener(null);
             binding.angleClearWorkaround.setOnItemSelectedListener(null);
             binding.switchExtGl43.setOnCheckedChangeListener(null);
             binding.switchExtCs.setOnCheckedChangeListener(null);
             binding.switchExtTimerQuery.setOnCheckedChangeListener(null);
+            binding.switchExtDirectStateAccess.setOnCheckedChangeListener(null);
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(1, 0, 0, 1, 0, 32, 0, 0);
+                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -399,11 +411,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.angleClearWorkaround.setSelection(config.getAngleDepthClearFixMode());
             binding.switchExtGl43.setChecked(config.getEnableExtGL43() == 1);
             binding.switchExtTimerQuery.setChecked(config.getEnableExtTimerQuery() == 0);
+            binding.switchExtDirectStateAccess.setChecked(config.getEnableExtDirectStateAccess() == 0);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
+            setCustomGLVersionSpinnerSelectionByGLVersion(config.getCustomGLVersion());
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
             binding.spinnerNoError.setOnItemSelectedListener(this);
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
+            binding.spinnerCustomGlVersion.setOnItemSelectedListener(this);
             binding.angleClearWorkaround.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
             binding.switchExtTimerQuery.setOnCheckedChangeListener(this);
@@ -446,14 +461,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             });
             binding.openOptions.setVisibility(View.GONE);
-            binding.optionLayout.setVisibility(View.VISIBLE);
+            binding.scrollLayout.setVisibility(View.VISIBLE);
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
             binding.spinnerNoError.setOnItemSelectedListener(this);
             binding.spinnerMultidrawMode.setOnItemSelectedListener(this);
+            binding.spinnerCustomGlVersion.setOnItemSelectedListener(this);
             binding.angleClearWorkaround.setOnItemSelectedListener(this);
             binding.switchExtGl43.setOnCheckedChangeListener(this);
             binding.switchExtTimerQuery.setOnCheckedChangeListener(this);
+            binding.switchExtDirectStateAccess.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
             isSpinnerInitialized = true;
 
@@ -465,28 +482,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void hideOptions() {
         binding.openOptions.setVisibility(View.VISIBLE);
-        binding.optionLayout.setVisibility(View.GONE);
+        binding.scrollLayout.setVisibility(View.GONE);
     }
 
     private void checkPermissionSilently() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			MGDirectoryUri = folderPermissionManager.getMGFolderUri();
-	
-			MGConfig config = MGConfig.loadConfig(this);
-			if (config != null && MGDirectoryUri != null) {
-				showOptions();
-			} else {
-				hideOptions();
-			}
-		} else {
-			if (ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-					&& ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-				showOptions();
-			} else {
-				hideOptions();
-			}
-		}
-	}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MGDirectoryUri = folderPermissionManager.getMGFolderUri();
+
+            MGConfig config = MGConfig.loadConfig(this);
+            if (config != null && MGDirectoryUri != null) {
+                showOptions();
+            } else {
+                hideOptions();
+            }
+        } else {
+            if (ActivityCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                showOptions();
+            } else {
+                hideOptions();
+            }
+        }
+    }
 
     private void checkPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) new MaterialAlertDialogBuilder(this)
@@ -518,7 +535,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
-                            if (config == null) config = new MGConfig(1, 0, 0, 1, 0, 32, 0, 0);
+                            if (config == null)
+                                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
@@ -541,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         if (!isSpinnerInitialized)
             return;
-        
+
         if (adapterView == binding.spinnerAngle && config != null) {
             int previous = config.getEnableANGLE();
             if (i == previous) {
@@ -589,6 +607,68 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (adapterView == binding.spinnerMultidrawMode && config != null) {
             try {
                 config.setMultidrawMode(i);
+            } catch (IOException e) {
+                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
+                Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (adapterView == binding.spinnerCustomGlVersion && config != null) {
+            int previous = config.getCustomGLVersion();
+            int newValue = getGLVersionBySpinnerIndex(i);
+
+            if (newValue == previous) {
+                return;
+            }
+
+            try {
+                if (previous == 0) {
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+                    builder.setTitle(getString(R.string.dialog_title_warning))
+                            .setMessage(getText(R.string.warning_enabling_custom_gl_version))
+                            .setNegativeButton(getString(R.string.dialog_negative), (dialog, which) -> {
+                                isSpinnerInitialized = false;
+                                binding.spinnerCustomGlVersion.setSelection(getSpinnerIndexByGLVersion(previous));
+                                isSpinnerInitialized = true;
+                            });
+
+                    androidx.appcompat.app.AlertDialog dialog = builder.create();
+
+                    final int cooldownSeconds = 15;
+                    final int[] remainingSeconds = {cooldownSeconds};
+
+                    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, which) -> {
+                        try {
+                            config.setCustomGLVersion(newValue);
+                        } catch (IOException e) {
+                            Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                            Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    dialog.setOnShowListener(dialogInterface -> {
+                        Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                        positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
+                        positiveButton.setEnabled(false);
+
+                        new CountDownTimer(cooldownSeconds * 1000, 1000) {
+                            public void onTick(long millisUntilFinished) {
+                                remainingSeconds[0] = (int) (millisUntilFinished / 1000);
+                                positiveButton.setText(getString(R.string.ok_with_countdown, remainingSeconds[0]));
+                            }
+
+                            public void onFinish() {
+                                positiveButton.setText(R.string.ok);
+                                positiveButton.setTextColor(ContextCompat.getColor(MainActivityContext, android.R.color.holo_red_dark));
+                                positiveButton.setEnabled(true);
+                            }
+                        }.start();
+                    });
+                    dialog.setCancelable(false);
+                    dialog.show();
+                } else {
+                    config.setCustomGLVersion(newValue);
+                }
             } catch (IOException e) {
                 Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e.getCause());
                 Toast.makeText(this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
@@ -688,13 +768,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         }
-		if (compoundButton == binding.switchExtTimerQuery && config != null) {
-			try {
-				config.setEnableExtTimerQuery(isChecked ? 0 : 1); // disable (ui) -> enable (json)
-			} catch (IOException e) {
-				Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
-				Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
-			}
+        if (compoundButton == binding.switchExtTimerQuery && config != null) {
+            try {
+                config.setEnableExtTimerQuery(isChecked ? 0 : 1); // disable (ui) -> enable (json)
+            } catch (IOException e) {
+                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+            }
+        }
+        if (compoundButton == binding.switchExtDirectStateAccess && config != null) {
+            try {
+                config.setEnableExtDirectStateAccess(isChecked ? 0 : 1); // disable (ui) -> enable (json)
+            } catch (IOException e) {
+                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -798,6 +886,66 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private boolean isAdreno740() {
         String renderer = getGPUName();
         return renderer != null && renderer.toLowerCase().contains("adreno") && renderer.contains("740");
+    }
+
+    private void addCustomGLVersionOptions() {
+        ArrayList<String> glVersionOptions = new ArrayList<>(GL_VERSION_MAP.keySet());
+
+        ArrayAdapter<String> glVersionAdapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner,
+                glVersionOptions
+        );
+
+        binding.spinnerCustomGlVersion.setAdapter(glVersionAdapter);
+    }
+
+    private void setCustomGLVersionSpinnerSelectionByGLVersion(int glVersion) {
+        String targetDisplay = "Disabled";
+
+        for (Map.Entry<String, Integer> entry : GL_VERSION_MAP.entrySet()) {
+            if (entry.getValue() == glVersion) {
+                targetDisplay = entry.getKey();
+                break;
+            }
+        }
+
+        // noinspection unchecked
+        ArrayAdapter<String> adapter = (ArrayAdapter<String>) binding.spinnerCustomGlVersion.getAdapter();
+        int position = adapter.getPosition(targetDisplay);
+
+        binding.spinnerCustomGlVersion.setSelection(Math.max(position, 0));
+    }
+
+    private void setCustomGLVersionBySpinnerIndex(int index) throws IOException {
+        if (config == null || !isSpinnerInitialized) return;
+
+        String selected = (String) binding.spinnerCustomGlVersion.getItemAtPosition(index);
+
+        Integer glVersionValue = GL_VERSION_MAP.get(selected);
+        if (glVersionValue == null) {
+            glVersionValue = 0;
+        }
+
+        config.setCustomGLVersion(glVersionValue);
+    }
+
+    private int getGLVersionBySpinnerIndex(int index) {
+        String selected = (String) binding.spinnerCustomGlVersion.getItemAtPosition(index);
+        Integer glVersionValue = GL_VERSION_MAP.get(selected);
+        return glVersionValue != null ? glVersionValue : 0;
+    }
+
+    private int getSpinnerIndexByGLVersion(int glVersion) {
+        String targetDisplay = "Disabled";
+        for (Map.Entry<String, Integer> entry : GL_VERSION_MAP.entrySet()) {
+            if (entry.getValue() == glVersion) {
+                targetDisplay = entry.getKey();
+                break;
+            }
+        }
+        ArrayAdapter<String> adapter = (ArrayAdapter<String>) binding.spinnerCustomGlVersion.getAdapter();
+        return adapter.getPosition(targetDisplay);
     }
 
 }

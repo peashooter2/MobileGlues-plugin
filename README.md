@@ -1,5 +1,13 @@
-MobileGlues
+MobileGlues-plugin
 ====
+
+> [!WARNING]
+> 
+> **This repository may contain unreleased Dev versions**
+>
+> If you are a regular user, **do not use these versions**, as they may cause **serious rendering issues**.  
+> Please visit [MobileGlues-release](https://github.com/MobileGL-Dev/MobileGlues-release) to get the latest stable release.
+
 Please see [MobileGlues](https://github.com/MobileGL-Dev/MobileGlues) and [MobileGlues-release](https://github.com/MobileGL-Dev/MobileGlues-release) to get more information.
 
 License
