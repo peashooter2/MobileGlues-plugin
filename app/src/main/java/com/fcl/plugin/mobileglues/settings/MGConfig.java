@@ -31,10 +31,11 @@ public class MGConfig {
     private int multidrawMode;
     private int angleDepthClearFixMode;
     private int customGLVersion;
+    private int fsr1Setting;
 
     public MGConfig(int enableANGLE, int enableNoError, int enableExtGL43, 
                     int enableExtTimerQuery, int enableExtComputeShader, int enableExtDirectStateAccess, 
-                    int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode, int customGLVersion) {
+                    int maxGlslCacheSize, int multidrawMode, int angleDepthClearFixMode, int customGLVersion, int fsr1Setting) {
         this.enableANGLE = enableANGLE;
         this.enableNoError = enableNoError;
         this.enableExtGL43 = enableExtGL43;
@@ -45,6 +46,7 @@ public class MGConfig {
         this.multidrawMode = multidrawMode;
         this.angleDepthClearFixMode = angleDepthClearFixMode;
         this.customGLVersion = customGLVersion;
+        this.fsr1Setting = fsr1Setting;
     }
 
     public static MGConfig loadConfig(Context context) {
@@ -172,6 +174,15 @@ public class MGConfig {
 
     public void setCustomGLVersion(int customGLVersion) throws IOException {
         this.customGLVersion = customGLVersion;
+        saveConfig();
+    }
+    
+    public int getFsr1Setting() {
+        return fsr1Setting;
+    }
+
+    public void setFsr1Setting(int fsr1Setting) throws IOException {
+        this.fsr1Setting = fsr1Setting;
         saveConfig();
     }
 

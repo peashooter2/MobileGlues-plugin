@@ -391,10 +391,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.switchExtCs.setOnCheckedChangeListener(null);
             binding.switchExtTimerQuery.setOnCheckedChangeListener(null);
             binding.switchExtDirectStateAccess.setOnCheckedChangeListener(null);
+            binding.switchEnableFsr1.setOnCheckedChangeListener(null);
             config = MGConfig.loadConfig(this);
 
             if (config == null) {
-                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0);
+                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0, 0);
             }
             if (config.getEnableANGLE() > 3 || config.getEnableANGLE() < 0)
                 config.setEnableANGLE(0);
@@ -413,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.switchExtTimerQuery.setChecked(config.getEnableExtTimerQuery() == 0);
             binding.switchExtDirectStateAccess.setChecked(config.getEnableExtDirectStateAccess() == 0);
             binding.switchExtCs.setChecked(config.getEnableExtComputeShader() == 1);
+            binding.switchEnableFsr1.setChecked(config.getFsr1Setting() == 1);
             setCustomGLVersionSpinnerSelectionByGLVersion(config.getCustomGLVersion());
 
             binding.spinnerAngle.setOnItemSelectedListener(this);
@@ -423,6 +425,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             binding.switchExtGl43.setOnCheckedChangeListener(this);
             binding.switchExtTimerQuery.setOnCheckedChangeListener(this);
             binding.switchExtCs.setOnCheckedChangeListener(this);
+            binding.switchEnableFsr1.setOnCheckedChangeListener(this);
             binding.inputMaxGlslCacheSize.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void afterTextChanged(Editable s) {
@@ -536,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             MGDirectoryUri = treeUri;
                             MGConfig config = MGConfig.loadConfig(this);
                             if (config == null)
-                                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0);
+                                config = new MGConfig(1, 0, 0, 1, 0, 1, 32, 0, 0, 0, 0);
                             config.saveConfig(this);
                             showOptions();
                         }
@@ -762,6 +765,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             } else {
                 try {
                     config.setEnableExtComputeShader(0);
+                } catch (IOException e) {
+                    Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                    Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+        if (compoundButton == binding.switchEnableFsr1 && config != null) {
+            if (isChecked) {
+                new MaterialAlertDialogBuilder(MainActivity.this)
+                        .setTitle(getString(R.string.dialog_title_warning))
+                        .setMessage(getString(R.string.warning_fsr1_enable)).setCancelable(false)
+                        .setOnKeyListener((dialog, keyCode, event) -> keyCode == KeyEvent.KEYCODE_BACK)
+                        .setPositiveButton(getString(R.string.dialog_positive), (dialog, which) -> {
+                            try {
+                                config.setFsr1Setting(1);
+                            } catch (IOException e) {
+                                Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
+                                Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton(getString(R.string.dialog_negative), (dialog, which) -> binding.switchEnableFsr1.setChecked(false))
+                        .show();
+            } else {
+                try {
+                    config.setFsr1Setting(0);
                 } catch (IOException e) {
                     Logger.getLogger("MG").log(Level.SEVERE, "Failed to save config! Exception: ", e);
                     Toast.makeText(MainActivity.this, getString(R.string.warning_save_failed), Toast.LENGTH_SHORT).show();

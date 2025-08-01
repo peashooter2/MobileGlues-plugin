@@ -169,8 +169,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/option_ext_direct_state_access"
+                app:layout_constraintBottom_toTopOf="@id/switch_enable_fsr1"/>
+            
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_enable_fsr1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/option_enable_fsr1"
                 app:layout_constraintBottom_toBottomOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>

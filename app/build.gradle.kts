@@ -42,7 +42,7 @@ android {
             resValue("string","app_name","MobileGlues")
 
             manifestPlaceholders["des"] = "MobileGlues (OpenGL 4.0, 1.17+)"
-            manifestPlaceholders["renderer"] = "MobileGlues:libmobileglues.so:libEGL.so"
+            manifestPlaceholders["renderer"] = "MobileGlues:libmobileglues.so:libmobileglues.so"
 
             manifestPlaceholders["minMCVer"] = "1.17"
             manifestPlaceholders["maxMCVer"] = "" //为空则不限制 No restriction if empty
@@ -61,6 +61,8 @@ android {
                 put("LIBGL_ES", "3")
                 put("DLOPEN", "libspirv-cross-c-shared.so,libshaderconv.so")
                 put("POJAV_RENDERER", "opengles3")
+				put("POJAVEXEC_EGL", "libmobileglues.so")
+				put("LIBGL_EGL", "libmobileglues.so")
             }.run {
                 var env = ""
                 forEach { (key, value) ->
