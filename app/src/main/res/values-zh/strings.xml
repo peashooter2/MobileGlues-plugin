@@ -48,8 +48,9 @@
     <string name="option_enable_fsr1">(实验性) 启用内置的 FSR1</string>
 
     <string name="option_custom_gl_version">自定义目标 OpenGL 版本</string>
-    <string name="warning_enabling_custom_gl_version"><b><big>重要信息：</big></b>\n\n
+    <string name="warning_enabling_custom_gl_version"><b><big>⚠️ 重要信息：</big></b>\n\n
  • 自定义 OpenGL 版本可能会<b><font color="@android:color/holo_red_dark">造成游戏崩溃或渲染错误，请谨慎使用</font></b>！\n
+ • 若发生问题，请首先<b><font color="@android:color/holo_red_dark">关闭此功能</font></b>！\n
  • 您启用此功能后，我们将<b><font color="@android:color/holo_red_dark">不再受理</font></b>您遇到的所有额外问题！反馈问题前，请注意<b><font color="@android:color/holo_red_dark">禁用此功能</font></b>！\n
  • 为确保稳定性，在没有必要的情况（如 Mods 强行检测 OpenGL 版本等）下，请<b>不要启用此功能</b>！</string>
 

@@ -51,8 +51,9 @@
     <string name="option_enable_fsr1">(Experimental) Enable built-in FSR1</string>
     
     <string name="option_custom_gl_version">Custom target OpenGL Version</string>
-    <string name="warning_enabling_custom_gl_version"><b><big>Important Notice:</big></b>\n\n
+    <string name="warning_enabling_custom_gl_version"><b><big>⚠️ Important Notice:</big></b>\n\n
  • Setting a custom OpenGL version may <b><font color="@android:color/holo_red_dark">cause game crashes or rendering issues — proceed with caution</font></b>!\n
+ • If any issues occur, please <b><font color="@android:color/holo_red_dark">disable this feature</font></b> first!\n
  • Once you enable this feature, we will <b><font color="@android:color/holo_red_dark">no longer accept</font></b> any bug reports related to additional issues! Before reporting problems, please make sure to <b><font color="@android:color/holo_red_dark">disable this feature</font></b>!\n
  • For stability, <b>do not enable this feature</b> unless absolutely necessary (e.g., mods requiring specific OpenGL versions)!</string>
 

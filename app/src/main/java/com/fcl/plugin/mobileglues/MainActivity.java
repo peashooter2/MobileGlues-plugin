@@ -637,7 +637,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                     androidx.appcompat.app.AlertDialog dialog = builder.create();
 
-                    final int cooldownSeconds = 15;
+                    final int cooldownSeconds = 41;
                     final int[] remainingSeconds = {cooldownSeconds};
 
                     dialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.ok), (dialogInterface, which) -> {
