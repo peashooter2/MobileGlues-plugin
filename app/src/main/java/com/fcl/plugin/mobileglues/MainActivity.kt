@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.angle_options, R.layout.spinner
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            adapter.setDropDownViewResource(R.layout.spinner)
             binding.spinnerAngle.adapter = adapter
         }
 
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.no_error_options, R.layout.spinner
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            adapter.setDropDownViewResource(R.layout.spinner)
             binding.spinnerNoError.adapter = adapter
         }
 
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.multidraw_mode_options, R.layout.spinner
         ).also { adapter ->
-             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+             adapter.setDropDownViewResource(R.layout.spinner)
             binding.spinnerMultidrawMode.adapter = adapter
         }
         
@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.angle_clear_workaround_options, R.layout.spinner
         ).also { adapter ->
-             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+             adapter.setDropDownViewResource(R.layout.spinner)
             binding.angleClearWorkaround.adapter = adapter
         }
     }
