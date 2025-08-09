@@ -2,7 +2,9 @@ name: MobileGlues
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
+      - dev
   workflow_dispatch:
 
 jobs:
@@ -14,7 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Set current date as env variable
         run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV

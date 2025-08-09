@@ -45,10 +45,12 @@
     <string name="option_ext_cs">启用不完整的 ARB_compute_shader 扩展</string>
     <string name="option_ext_timer_query">禁用推荐的 timer_query 扩展</string>
     <string name="option_ext_direct_state_access">禁用高级的 direct_state_access 扩展</string>
+    <string name="option_enable_fsr1">(实验性) 启用内置的 FSR1</string>
 
     <string name="option_custom_gl_version">自定义目标 OpenGL 版本</string>
-    <string name="warning_enabling_custom_gl_version"><b><big>重要信息：</big></b>\n\n
+    <string name="warning_enabling_custom_gl_version"><b><big>⚠️ 重要信息：</big></b>\n\n
  • 自定义 OpenGL 版本可能会<b><font color="@android:color/holo_red_dark">造成游戏崩溃或渲染错误，请谨慎使用</font></b>！\n
+ • 若发生问题，请首先<b><font color="@android:color/holo_red_dark">关闭此功能</font></b>！\n
  • 您启用此功能后，我们将<b><font color="@android:color/holo_red_dark">不再受理</font></b>您遇到的所有额外问题！反馈问题前，请注意<b><font color="@android:color/holo_red_dark">禁用此功能</font></b>！\n
  • 为确保稳定性，在没有必要的情况（如 Mods 强行检测 OpenGL 版本等）下，请<b>不要启用此功能</b>！</string>
 
@@ -65,10 +67,10 @@
     <string name="dialog_title_warning">警告</string>
     <string name="warning_ext_gl43_enable">启用不完整的 OpenGL43 扩展可能会导致部分光影、Mods 错误，是否继续？</string>
     <string name="warning_ext_cs_enable">启用不完整的 ARB_compute_shader 扩展可能会导致部分光影、Mods 错误，是否继续？</string>
-
     <string name="warning_adreno_740_angle">在 Adreno 740 设备上启用 ANGLE 极有可能导致严重渲染错误，是否继续？</string>
     <string name="warning_enabling_angle_clear_workaround">启用 ANGLE Depth Clear 修复会修复 ANGLE 在 Minecraft 1.21.5+ 原版中的手持物品被遮挡的问题，但会导致性能下降，是否继续？</string>
-
+    <string name="warning_fsr1_enable">启用内置的 FSR1 可能会在部分驱动下造成图像损坏。\n如果您的设备搭载了 Adreno GPU，请启用 ANGLE。</string>
+    
     <string name="warning_load_failed">无法加载 MG 配置文件！</string>
     <string name="warning_save_failed">无法保存 MG 配置文件！</string>
     <string name="warning_path_selection_error">路径错误！请选择：\n%s\n但您选择了：\n%s</string>
