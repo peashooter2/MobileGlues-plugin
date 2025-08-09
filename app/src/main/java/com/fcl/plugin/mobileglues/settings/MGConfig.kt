@@ -54,10 +54,9 @@ data class MGConfig(@Transient val context: Context) {
             }
 
             val config = MGConfig(context) // 使用修改后的构造函数
-            val gson = Gson()
             try {
                 // 将从文件读取的配置赋值给新创建的 config 对象
-                gson.fromJson(configStr, JsonObject::class.java).apply {
+                Gson().fromJson(configStr, JsonObject::class.java).apply {
                     config.enableANGLE = this.get("enableANGLE")?.asInt ?: 1
                     config.enableNoError = this.get("enableNoError")?.asInt ?: 0
                     config.enableExtGL43 = this.get("enableExtGL43")?.asInt ?: 0

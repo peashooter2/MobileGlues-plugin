@@ -18,7 +18,6 @@ import java.nio.file.Path
 object FileUtils {
 
     @Throws(IOException::class)
-    @JvmStatic
     fun readText(context: Context, uri: Uri): String {
         context.contentResolver.openInputStream(uri).use { input ->
             val result = ByteArrayOutputStream()
@@ -32,7 +31,6 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun writeText(context: Context, directoryUri: Uri, fileName: String, text: String, mimeType: String) {
         val resolver = context.contentResolver
         val baseDocId = DocumentsContract.getTreeDocumentId(directoryUri)
@@ -67,7 +65,6 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun writeText(file: File, text: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             throw UnsupportedOperationException("Use SAF method for Android 10+")
@@ -76,36 +73,30 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun readText(file: File): String = readText(file, StandardCharsets.UTF_8)
 
     @Throws(IOException::class)
-    @JvmStatic
     fun readText(file: File, charset: Charset): String {
         return String(Files.readAllBytes(file.toPath()), charset)
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun writeText(file: File, text: String, charset: Charset) {
         writeBytes(file, text.toByteArray(charset))
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun writeBytes(file: File, data: ByteArray) {
         writeBytes(file.toPath(), data)
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun writeBytes(path: Path, data: ByteArray) {
         Files.createDirectories(path.parent)
         Files.write(path, data)
     }
 
     @Throws(IOException::class)
-    @JvmStatic
     fun deleteFile(file: File) {
         if (file.isDirectory) {
             file.listFiles()?.forEach {
@@ -115,7 +106,6 @@ object FileUtils {
         Files.delete(file.toPath())
     }
 
-    @JvmStatic
     fun deleteAppFiles() {
         val mgDirUri = MainActivity.MGDirectoryUri
         val mgDir = File(Environment.getExternalStorageDirectory(), "MG")
@@ -134,7 +124,6 @@ object FileUtils {
         }
     }
 
-    @JvmStatic
     fun deleteFileViaSAF(context: Context, directoryUri: Uri, fileName: String) {
         try {
             val dir = DocumentFile.fromTreeUri(context, directoryUri)
