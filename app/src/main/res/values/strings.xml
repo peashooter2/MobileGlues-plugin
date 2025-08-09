@@ -48,13 +48,14 @@
     <string name="option_ext_cs">Enable Incomplete \'ARB_compute_shader\' Extension</string>
     <string name="option_ext_timer_query">Disable Recommended \'timer_query\' Extension</string>
     <string name="option_ext_direct_state_access">Disable Advanced \'direct_state_access\' Extension</string>
+    <string name="option_enable_fsr1">(Experimental) Enable built-in FSR1</string>
     
     <string name="option_custom_gl_version">Custom target OpenGL Version</string>
-    <string name="warning_enabling_custom_gl_version"><b><big>Important Notice:</big></b>\n\n
+    <string name="warning_enabling_custom_gl_version"><b><big>⚠️ Important Notice:</big></b>\n\n
  • Setting a custom OpenGL version may <b><font color="@android:color/holo_red_dark">cause game crashes or rendering issues — proceed with caution</font></b>!\n
+ • If any issues occur, please <b><font color="@android:color/holo_red_dark">disable this feature</font></b> first!\n
  • Once you enable this feature, we will <b><font color="@android:color/holo_red_dark">no longer accept</font></b> any bug reports related to additional issues! Before reporting problems, please make sure to <b><font color="@android:color/holo_red_dark">disable this feature</font></b>!\n
  • For stability, <b>do not enable this feature</b> unless absolutely necessary (e.g., mods requiring specific OpenGL versions)!</string>
-
 
     <string name="dialog_positive">OK</string>
     <string name="dialog_negative">Cancel</string>
@@ -71,7 +72,8 @@
     <string name="warning_ext_cs_enable">Enabling the incomplete ARB_compute_shader extension may cause issues with some shaders and mods. Are you sure you want to continue?</string>
     <string name="warning_adreno_740_angle">Enabling ANGLE on Adreno 740 devices is highly likely to cause severe rendering issues. Are you sure you want to continue?</string>
     <string name="warning_enabling_angle_clear_workaround">Enabling the ANGLE Depth Clear Workaround fixes the issue of the handheld items being obscured in vanilla Minecraft 1.21.5+, but may cause performance degradation. Are you sure you want to continue?</string>
-
+    <string name="warning_fsr1_enable">Enabling built-in FSR1 may cause image corruption on certain drivers.\nIf your device uses an Adreno GPU, please enable ANGLE.</string>
+    
     <string name="warning_load_failed">Failed to load MG config!</string>
     <string name="warning_save_failed">Failed to save MG config!</string>
     <string name="warning_path_selection_error">Path error! Please select: \n%s\nbut you selected:\n%s</string>
