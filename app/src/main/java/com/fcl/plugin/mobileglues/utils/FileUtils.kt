@@ -1,12 +1,10 @@
 package com.fcl.plugin.mobileglues.utils
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import com.fcl.plugin.mobileglues.MainActivity
 import java.io.*
@@ -43,9 +41,9 @@ object FileUtils {
                     return
                 }
             }
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             // handle below
-        } catch (e: RuntimeException) {
+        } catch (_: RuntimeException) {
             // handle below
         }
 

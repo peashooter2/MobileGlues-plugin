@@ -113,7 +113,7 @@ data class MGConfig(@Transient val context: Context) {
                     MainActivity.MGDirectoryUri,
                     DocumentsContract.getTreeDocumentId(MainActivity.MGDirectoryUri) + "/glsl_cache.tmp"
                 )
-                MainActivity.MainActivityContext.contentResolver?.let {
+                context.contentResolver?.let {
                     DocumentsContract.deleteDocument(it, uri)
                 }
             } else {

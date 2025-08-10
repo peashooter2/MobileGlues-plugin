@@ -51,6 +51,8 @@ import java.io.File
 import java.sql.Types
 import java.util.logging.Level
 import java.util.logging.Logger
+import androidx.core.net.toUri
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
 
@@ -131,7 +133,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         folderPermissionManager = FolderPermissionManager(this)
-        MainActivityContext = this
         setSupportActionBar(binding.appBar)
 
         setupSpinners()
@@ -324,7 +325,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             .setCancelable(false)
             .setPositiveButton(R.string.exit) { _, _ ->
                 finishAffinity()
-                System.exit(0)
+                exitProcess(0)
             }
             .show()
     }
@@ -448,8 +449,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
     }
 
     private fun setAllListeners(listener: Any?) {
-        val itemListener = if (listener is AdapterView.OnItemSelectedListener) listener else null
-        val checkedListener = if (listener is CompoundButton.OnCheckedChangeListener) listener else null
+        val itemListener = listener as? AdapterView.OnItemSelectedListener
+        val checkedListener = listener as? CompoundButton.OnCheckedChangeListener
         
         binding.spinnerAngle.onItemSelectedListener = itemListener
         binding.spinnerNoError.onItemSelectedListener = itemListener
@@ -496,7 +497,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                     // EXTRA_INITIAL_URI 是可选的，但可以改善用户体验
-                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(Environment.getExternalStorageDirectory().toString() + "/MG"))
+                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                        (Environment.getExternalStorageDirectory().toString() + "/MG").toUri())
                     safLauncher.launch(intent)
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
@@ -745,6 +747,5 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         private const val LEGACY_PERMISSION_REQUEST_CODE = 1000
 
         var MGDirectoryUri: Uri? = null
-        lateinit var MainActivityContext: Context
     }
 }
