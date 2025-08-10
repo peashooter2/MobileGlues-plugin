@@ -69,7 +69,7 @@
     <string name="warning_ext_cs_enable">启用不完整的 ARB_compute_shader 扩展可能会导致部分光影、Mods 错误，是否继续？</string>
     <string name="warning_adreno_740_angle">在 Adreno 740 设备上启用 ANGLE 极有可能导致严重渲染错误，是否继续？</string>
     <string name="warning_enabling_angle_clear_workaround">启用 ANGLE Depth Clear 修复会修复 ANGLE 在 Minecraft 1.21.5+ 原版中的手持物品被遮挡的问题，但会导致性能下降，是否继续？</string>
-    <string name="warning_fsr1_enable">启用内置的 FSR1 可能会在部分驱动下造成图像损坏。\n如果您的设备搭载了 Adreno GPU，请启用 ANGLE。</string>
+    <string name="warning_fsr1_enable">启用内置的 FSR1 可能会在部分驱动下造成图像损坏。\n如果您的设备搭载了 Adreno GPU，请启用 ANGLE以确保渲染正常。\n已知此功能与 ANGLE 同时启用会导致性能下降，请谨慎启用。</string>
     
     <string name="warning_load_failed">无法加载 MG 配置文件！</string>
     <string name="warning_save_failed">无法保存 MG 配置文件！</string>
