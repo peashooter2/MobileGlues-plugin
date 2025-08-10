@@ -1,7 +1,6 @@
 package com.fcl.plugin.mobileglues
 
 import android.Manifest
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,17 +24,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.fcl.plugin.mobileglues.databinding.ActivityMainBinding
@@ -51,10 +49,10 @@ import java.io.File
 import java.sql.Types
 import java.util.logging.Level
 import java.util.logging.Logger
-import androidx.core.net.toUri
 import kotlin.system.exitProcess
 
-class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
+class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
+    CompoundButton.OnCheckedChangeListener {
 
     private lateinit var glVersionMap: Map<String, Int>
 
@@ -64,50 +62,56 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
     private var isSpinnerInitialized = false
 
     // 使用 Activity Result API 替代 onActivityResult
-    private val safLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.data?.let { treeUri ->
-                if (!folderPermissionManager.isUriMatchingFilePath(treeUri, File(Constants.MG_DIRECTORY))) {
-                    MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.app_name)
-                        .setMessage(
-                            getString(
-                                R.string.warning_path_selection_error,
-                                Constants.MG_DIRECTORY,
-                                folderPermissionManager.getFileByUri(treeUri)
-                            )
+    private val safLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.data?.let { treeUri ->
+                    if (!folderPermissionManager.isUriMatchingFilePath(
+                            treeUri,
+                            File(Constants.MG_DIRECTORY)
                         )
-                        .setPositiveButton(R.string.dialog_positive, null)
-                        .show()
-                    hideOptions()
-                    return@let
-                }
+                    ) {
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(R.string.app_name)
+                            .setMessage(
+                                getString(
+                                    R.string.warning_path_selection_error,
+                                    Constants.MG_DIRECTORY,
+                                    folderPermissionManager.getFileByUri(treeUri)
+                                )
+                            )
+                            .setPositiveButton(R.string.dialog_positive, null)
+                            .show()
+                        hideOptions()
+                        return@let
+                    }
 
-                contentResolver.takePersistableUriPermission(
-                    treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+                    contentResolver.takePersistableUriPermission(
+                        treeUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
 
-                MGDirectoryUri = treeUri
-                var currentConfig = MGConfig.loadConfig(this)
-                if (currentConfig == null) {
-                    currentConfig = MGConfig(this)
-                }
-                currentConfig.save()
+                    MGDirectoryUri = treeUri
+                    var currentConfig = MGConfig.loadConfig(this)
+                    if (currentConfig == null) {
+                        currentConfig = MGConfig(this)
+                    }
+                    currentConfig.save()
+                    showOptions()
+                } ?: hideOptions()
+            }
+        }
+
+    private val appSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            // 当从应用设置返回时，重新检查权限
+            if (hasLegacyPermissions()) {
                 showOptions()
-            } ?: hideOptions()
+            } else {
+                // 如果用户仍然没有授予权限，可以再次显示请求或提示
+                checkPermission()
+            }
         }
-    }
-    
-    private val appSettingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // 当从应用设置返回时，重新检查权限
-        if (hasLegacyPermissions()) {
-            showOptions()
-        } else {
-            // 如果用户仍然没有授予权限，可以再次显示请求或提示
-             checkPermission()
-        }
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,7 +142,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         setupSpinners()
 
         binding.openOptions.setOnClickListener { checkPermission() }
-        
+
         // 设置约束布局的底边距为系统导航栏的高度
         val optionLayoutParams = binding.optionLayout.layoutParams as ViewGroup.MarginLayoutParams
         window.decorView.setOnApplyWindowInsetsListener { v, insets ->
@@ -168,10 +172,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.multidraw_mode_options, R.layout.spinner
         ).also { adapter ->
-             adapter.setDropDownViewResource(R.layout.spinner)
+            adapter.setDropDownViewResource(R.layout.spinner)
             binding.spinnerMultidrawMode.adapter = adapter
         }
-        
+
         // GL Version 选项
         addCustomGLVersionOptions()
 
@@ -179,7 +183,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         ArrayAdapter.createFromResource(
             this, R.array.angle_clear_workaround_options, R.layout.spinner
         ).also { adapter ->
-             adapter.setDropDownViewResource(R.layout.spinner)
+            adapter.setDropDownViewResource(R.layout.spinner)
             binding.angleClearWorkaround.adapter = adapter
         }
     }
@@ -191,10 +195,16 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             hasLegacyPermissions()
         }
     }
-    
+
     private fun hasLegacyPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-               ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        return ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onResume() {
@@ -215,10 +225,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 AppInfoDialogBuilder(this).show()
                 true
             }
+
             R.id.action_remove -> {
                 showRemoveConfirmationDialog()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -244,7 +256,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
 
                 override fun onFinish() {
                     positiveButton.text = getString(R.string.ok)
-                    positiveButton.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
+                    positiveButton.setTextColor(
+                        ContextCompat.getColor(
+                            this@MainActivity,
+                            android.R.color.holo_red_dark
+                        )
+                    )
                     positiveButton.isEnabled = true
                 }
             }.start()
@@ -256,14 +273,17 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         val view = LayoutInflater.from(this).inflate(R.layout.progress_dialog_md3, null)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
         val progressText = view.findViewById<TextView>(R.id.progress_text)
-        val progressDialog = MaterialAlertDialogBuilder(this, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog)
+        val progressDialog = MaterialAlertDialogBuilder(
+            this,
+            com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
+        )
             .setTitle(R.string.removing_mobileglues)
             .setView(view)
             .setCancelable(false)
             .create()
-        
+
         progressDialog.show()
-        
+
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 // 1. 删除配置
@@ -312,7 +332,11 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
-                    Toast.makeText(this@MainActivity, getString(R.string.remove_failed, e.message), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.remove_failed, e.message),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -335,7 +359,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MGDirectoryUri?.let { uri ->
                     DocumentFile.fromTreeUri(this, uri)?.findFile(fileName)?.let { file ->
-                        if (file.exists()) DocumentsContract.deleteDocument(contentResolver, file.uri)
+                        if (file.exists()) DocumentsContract.deleteDocument(
+                            contentResolver,
+                            file.uri
+                        )
                     }
                 }
             } else {
@@ -396,9 +423,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         setAllListeners(null) // 解绑所有监听器
 
         config = MGConfig.loadConfig(this) ?: MGConfig(this)
-        
+
         config?.let { cfg ->
-             // 规范化配置值
+            // 规范化配置值
             if (cfg.enableANGLE !in 0..3) cfg.enableANGLE = 0
             if (cfg.enableNoError !in 0..3) cfg.enableNoError = 0
             if (cfg.maxGlslCacheSize == Types.NULL) cfg.maxGlslCacheSize = 32
@@ -416,7 +443,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             binding.switchEnableFsr1.isChecked = cfg.fsr1Setting == 1
             setCustomGLVersionSpinnerSelectionByGLVersion(cfg.customGLVersion)
         }
-        
+
         setAllListeners(this) // 重新绑定所有监听器
 
         binding.inputMaxGlslCacheSize.addTextChangedListener(object : TextWatcher {
@@ -426,19 +453,22 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                     try {
                         val number = text.toInt()
                         if (number < -1 || number == 0) {
-                            binding.inputMaxGlslCacheSizeLayout.error = getString(R.string.option_glsl_cache_error_range)
+                            binding.inputMaxGlslCacheSizeLayout.error =
+                                getString(R.string.option_glsl_cache_error_range)
                         } else {
                             binding.inputMaxGlslCacheSizeLayout.error = null
                             config?.maxGlslCacheSize = number
                         }
                     } catch (e: NumberFormatException) {
-                        binding.inputMaxGlslCacheSizeLayout.error = getString(R.string.option_glsl_cache_error_invalid)
+                        binding.inputMaxGlslCacheSizeLayout.error =
+                            getString(R.string.option_glsl_cache_error_invalid)
                     }
                 } else {
                     binding.inputMaxGlslCacheSizeLayout.error = null
                     config?.maxGlslCacheSize = 32 // 默认值
                 }
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -451,13 +481,13 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
     private fun setAllListeners(listener: Any?) {
         val itemListener = listener as? AdapterView.OnItemSelectedListener
         val checkedListener = listener as? CompoundButton.OnCheckedChangeListener
-        
+
         binding.spinnerAngle.onItemSelectedListener = itemListener
         binding.spinnerNoError.onItemSelectedListener = itemListener
         binding.spinnerMultidrawMode.onItemSelectedListener = itemListener
         binding.spinnerCustomGlVersion.onItemSelectedListener = itemListener
         binding.angleClearWorkaround.onItemSelectedListener = itemListener
-        
+
         binding.switchExtGl43.setOnCheckedChangeListener(checkedListener)
         binding.switchExtCs.setOnCheckedChangeListener(checkedListener)
         binding.switchExtTimerQuery.setOnCheckedChangeListener(checkedListener)
@@ -493,12 +523,19 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.app_name))
-                .setMessage(getString(R.string.dialog_permission_msg_android_Q, Constants.MG_DIRECTORY))
+                .setMessage(
+                    getString(
+                        R.string.dialog_permission_msg_android_Q,
+                        Constants.MG_DIRECTORY
+                    )
+                )
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                     // EXTRA_INITIAL_URI 是可选的，但可以改善用户体验
-                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-                        (Environment.getExternalStorageDirectory().toString() + "/MG").toUri())
+                    intent.putExtra(
+                        DocumentsContract.EXTRA_INITIAL_URI,
+                        (Environment.getExternalStorageDirectory().toString() + "/MG").toUri()
+                    )
                     safLauncher.launch(intent)
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
@@ -507,7 +544,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
             if (hasLegacyPermissions()) {
                 showOptions()
             } else {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), LEGACY_PERMISSION_REQUEST_CODE)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    ),
+                    LEGACY_PERMISSION_REQUEST_CODE
+                )
             }
         }
     }
@@ -524,7 +568,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                     MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_title_warning))
                         .setMessage(getString(R.string.warning_adreno_740_angle))
-                        .setPositiveButton(getString(R.string.dialog_positive)) { _, _ -> config?.enableANGLE = position }
+                        .setPositiveButton(getString(R.string.dialog_positive)) { _, _ ->
+                            config?.enableANGLE = position
+                        }
                         .setNegativeButton(getString(R.string.dialog_negative)) { _, _ ->
                             isSpinnerInitialized = false
                             binding.spinnerAngle.setSelection(config!!.enableANGLE)
@@ -536,17 +582,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                     config?.enableANGLE = position
                 }
             }
+
             R.id.spinner_no_error -> config?.enableNoError = position
             R.id.spinner_multidraw_mode -> config?.multidrawMode = position
             R.id.spinner_custom_gl_version -> handleCustomGLVersionSelection(position)
             R.id.angle_clear_workaround -> {
-                 val previous = config!!.angleDepthClearFixMode
-                 if (position == previous) return
-                 if (position >= 1) {
+                val previous = config!!.angleDepthClearFixMode
+                if (position == previous) return
+                if (position >= 1) {
                     MaterialAlertDialogBuilder(this)
                         .setTitle(getString(R.string.dialog_title_warning))
                         .setMessage(getString(R.string.warning_enabling_angle_clear_workaround))
-                        .setPositiveButton(getString(R.string.dialog_positive)) { _, _ -> config?.angleDepthClearFixMode = position }
+                        .setPositiveButton(getString(R.string.dialog_positive)) { _, _ ->
+                            config?.angleDepthClearFixMode = position
+                        }
                         .setNegativeButton(getString(R.string.dialog_negative)) { _, _ ->
                             isSpinnerInitialized = false
                             binding.angleClearWorkaround.setSelection(config!!.angleDepthClearFixMode)
@@ -554,13 +603,13 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                         }
                         .setCancelable(false)
                         .show()
-                 } else {
+                } else {
                     config?.angleDepthClearFixMode = position
-                 }
+                }
             }
         }
     }
-    
+
     private fun handleCustomGLVersionSelection(position: Int) {
         val previous = config!!.customGLVersion
         val newValue = getGLVersionBySpinnerIndex(position)
@@ -580,7 +629,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 }
                 .setCancelable(false)
                 .create()
-            
+
             dialog.setOnShowListener {
                 val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 positiveButton.isEnabled = false
@@ -589,11 +638,18 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 object : CountDownTimer(cooldownSeconds * 1000L, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
                         val remainingSeconds = (millisUntilFinished / 1000).toInt()
-                        positiveButton.text = getString(R.string.ok_with_countdown, remainingSeconds)
+                        positiveButton.text =
+                            getString(R.string.ok_with_countdown, remainingSeconds)
                     }
+
                     override fun onFinish() {
                         positiveButton.text = getString(R.string.ok)
-                        positiveButton.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
+                        positiveButton.setTextColor(
+                            ContextCompat.getColor(
+                                this@MainActivity,
+                                android.R.color.holo_red_dark
+                            )
+                        )
                         positiveButton.isEnabled = true
                     }
                 }.start()
@@ -608,9 +664,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
     override fun onNothingSelected(parent: AdapterView<*>) {}
 
     override fun onCheckedChanged(compoundButton: CompoundButton, isChecked: Boolean) {
-         if (config == null) return
+        if (config == null) return
 
-         when (compoundButton.id) {
+        when (compoundButton.id) {
             R.id.switch_ext_gl43 -> handleSwitchWithWarning(
                 isChecked,
                 R.string.warning_ext_gl43_enable,
@@ -618,6 +674,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 { config?.enableExtGL43 = 0 },
                 compoundButton
             )
+
             R.id.switch_ext_cs -> handleSwitchWithWarning(
                 isChecked,
                 R.string.warning_ext_cs_enable,
@@ -625,6 +682,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 { config?.enableExtComputeShader = 0 },
                 compoundButton
             )
+
             R.id.switch_enable_fsr1 -> handleSwitchWithWarning(
                 isChecked,
                 R.string.warning_fsr1_enable,
@@ -632,11 +690,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 { config?.fsr1Setting = 0 },
                 compoundButton
             )
-            R.id.switch_ext_timer_query -> config?.enableExtTimerQuery = if (isChecked) 0 else 1 // UI (disable) -> JSON (enable)
-            R.id.switch_ext_direct_state_access -> config?.enableExtDirectStateAccess = if (isChecked) 0 else 1
-         }
+
+            R.id.switch_ext_timer_query -> config?.enableExtTimerQuery =
+                if (isChecked) 0 else 1 // UI (disable) -> JSON (enable)
+            R.id.switch_ext_direct_state_access -> config?.enableExtDirectStateAccess =
+                if (isChecked) 0 else 1
+        }
     }
-    
+
     private fun handleSwitchWithWarning(
         isChecked: Boolean,
         warningMsgRes: Int,
@@ -651,22 +712,35 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
                 .setCancelable(false)
                 .setOnKeyListener { dialog, keyCode, _ -> keyCode == KeyEvent.KEYCODE_BACK }
                 .setPositiveButton(getString(R.string.dialog_positive)) { _, _ -> onConfirm() }
-                .setNegativeButton(getString(R.string.dialog_negative)) { _, _ -> button.isChecked = false }
+                .setNegativeButton(getString(R.string.dialog_negative)) { _, _ ->
+                    button.isChecked = false
+                }
                 .show()
         } else {
             onCancel()
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LEGACY_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 showOptions()
             } else {
-                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(
+                        this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                ) {
                     // 用户选择了 "不再询问"，引导他们到设置
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
+                    val intent = Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", packageName, null)
+                    )
                     appSettingsLauncher.launch(intent)
                 } else {
                     // 用户拒绝了，可以再次显示请求或提示
@@ -682,31 +756,50 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, Co
 
         val version = IntArray(2)
         if (!EGL14.eglInitialize(eglDisplay, version, 0, version, 1)) return null
-        
+
         // 此处省略了 EGL 上下文创建的完整代码，因为它很长且与问题核心无关
         // 假设它能正确返回渲染器名称
         // ... (完整的 EGL 上下文创建和销毁代码)
-        
+
         // 模拟一个简单的实现
         var renderer: String? = null
-        val configAttributes = intArrayOf(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_NONE)
+        val configAttributes =
+            intArrayOf(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_NONE)
         val eglConfigs = arrayOfNulls<android.opengl.EGLConfig>(1)
         val numConfigs = IntArray(1)
-        if (!EGL14.eglChooseConfig(eglDisplay, configAttributes, 0, eglConfigs, 0, 1, numConfigs, 0)) {
+        if (!EGL14.eglChooseConfig(
+                eglDisplay,
+                configAttributes,
+                0,
+                eglConfigs,
+                0,
+                1,
+                numConfigs,
+                0
+            )
+        ) {
             EGL14.eglTerminate(eglDisplay)
             return null
         }
         val contextAttributes = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
-        val eglContext = EGL14.eglCreateContext(eglDisplay, eglConfigs[0], EGL14.EGL_NO_CONTEXT, contextAttributes, 0)
-        
+        val eglContext = EGL14.eglCreateContext(
+            eglDisplay,
+            eglConfigs[0],
+            EGL14.EGL_NO_CONTEXT,
+            contextAttributes,
+            0
+        )
+
         if (eglContext != EGL14.EGL_NO_CONTEXT) {
-            val pbufferAttributes = intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE)
-            val eglSurface = EGL14.eglCreatePbufferSurface(eglDisplay, eglConfigs[0], pbufferAttributes, 0)
+            val pbufferAttributes =
+                intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE)
+            val eglSurface =
+                EGL14.eglCreatePbufferSurface(eglDisplay, eglConfigs[0], pbufferAttributes, 0)
             if (eglSurface != EGL14.EGL_NO_SURFACE) {
-                 if (EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
+                if (EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
                     renderer = GLES20.glGetString(GLES20.GL_RENDERER)
-                 }
-                 EGL14.eglDestroySurface(eglDisplay, eglSurface)
+                }
+                EGL14.eglDestroySurface(eglDisplay, eglSurface)
             }
             EGL14.eglDestroyContext(eglDisplay, eglContext)
         }

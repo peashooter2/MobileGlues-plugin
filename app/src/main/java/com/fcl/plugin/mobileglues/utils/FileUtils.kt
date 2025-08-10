@@ -7,7 +7,10 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import com.fcl.plugin.mobileglues.MainActivity
-import java.io.*
+import java.io.BufferedOutputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -29,10 +32,17 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    fun writeText(context: Context, directoryUri: Uri, fileName: String, text: String, mimeType: String) {
+    fun writeText(
+        context: Context,
+        directoryUri: Uri,
+        fileName: String,
+        text: String,
+        mimeType: String
+    ) {
         val resolver = context.contentResolver
         val baseDocId = DocumentsContract.getTreeDocumentId(directoryUri)
-        val fileUri = DocumentsContract.buildDocumentUriUsingTree(directoryUri, "$baseDocId/$fileName")
+        val fileUri =
+            DocumentsContract.buildDocumentUriUsingTree(directoryUri, "$baseDocId/$fileName")
 
         try {
             resolver.openOutputStream(fileUri, "wt")?.use { out ->
@@ -52,8 +62,9 @@ object FileUtils {
             DocumentsContract.getTreeDocumentId(directoryUri)
         )
 
-        val newFileUri = DocumentsContract.createDocument(resolver, parentDocumentUri, mimeType, fileName)
-            ?: throw IOException("Failed to create document: $fileName")
+        val newFileUri =
+            DocumentsContract.createDocument(resolver, parentDocumentUri, mimeType, fileName)
+                ?: throw IOException("Failed to create document: $fileName")
 
         resolver.openOutputStream(newFileUri, "wt")?.use { out ->
             BufferedOutputStream(out).use { bufferedOut ->

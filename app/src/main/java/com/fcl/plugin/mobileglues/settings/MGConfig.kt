@@ -1,11 +1,9 @@
 package com.fcl.plugin.mobileglues.settings
 
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.util.Log
 import com.fcl.plugin.mobileglues.MainActivity
 import com.fcl.plugin.mobileglues.utils.Constants
 import com.fcl.plugin.mobileglues.utils.FileUtils
@@ -15,7 +13,7 @@ import com.google.gson.JsonParser
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
-import kotlin.properties.Delegates // 导入 Delegates
+import kotlin.properties.Delegates
 
 data class MGConfig(@Transient val context: Context) {
     // 使用 Delegates.observable 委托属性
@@ -62,7 +60,8 @@ data class MGConfig(@Transient val context: Context) {
                     config.enableExtGL43 = this.get("enableExtGL43")?.asInt ?: 0
                     config.enableExtTimerQuery = this.get("enableExtTimerQuery")?.asInt ?: 1
                     config.enableExtComputeShader = this.get("enableExtComputeShader")?.asInt ?: 0
-                    config.enableExtDirectStateAccess = this.get("enableExtDirectStateAccess")?.asInt ?: 1
+                    config.enableExtDirectStateAccess =
+                        this.get("enableExtDirectStateAccess")?.asInt ?: 1
                     config.maxGlslCacheSize = this.get("maxGlslCacheSize")?.asInt ?: 32
                     config.multidrawMode = this.get("multidrawMode")?.asInt ?: 0
                     config.angleDepthClearFixMode = this.get("angleDepthClearFixMode")?.asInt ?: 0
@@ -80,11 +79,11 @@ data class MGConfig(@Transient val context: Context) {
             return config
         }
     }
-    
+
     // 省略 saveConfig 和 save 方法，因为 observable 委托会直接调用 save(context)
     // 另外，Data Class 的特性不再适用，因为属性委托会改变属性的 getter/setter
     // 所以我将 data class 关键字移除，并修改了构造函数来接收 Context
-    
+
     fun deleteConfig() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -125,7 +124,7 @@ data class MGConfig(@Transient val context: Context) {
 
     @Throws(IOException::class)
     fun save() {
-    val configMap = mapOf(
+        val configMap = mapOf(
             "enableANGLE" to enableANGLE,
             "enableNoError" to enableNoError,
             "enableExtGL43" to enableExtGL43,
@@ -138,7 +137,7 @@ data class MGConfig(@Transient val context: Context) {
             "customGLVersion" to customGLVersion,
             "fsr1Setting" to fsr1Setting
         )
-    
+
         val configStr = Gson().toJson(configMap)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val uri = MainActivity.MGDirectoryUri
