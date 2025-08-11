@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
-import com.fcl.plugin.mobileglues.MainActivity
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -116,7 +115,6 @@ object FileUtils {
     }
 
     fun deleteAppFiles() {
-        val mgDirUri = MainActivity.MGDirectoryUri
         val mgDir = File(Environment.getExternalStorageDirectory(), "MG")
         val config = File(mgDir, "config.json")
         val cache = File(mgDir, "glsl_cache.tmp")
