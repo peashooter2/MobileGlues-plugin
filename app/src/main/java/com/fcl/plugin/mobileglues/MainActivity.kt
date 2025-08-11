@@ -830,13 +830,11 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         return glVersionMap[selected] ?: 0
     }
 
-    private val glVersionItems = listOf("Disabled") + glVersionMap.keys
-
     private fun getSpinnerIndexByGLVersion(glVersion: Int): Int {
         val targetDisplay = glVersionMap.entries
             .firstOrNull { it.value == glVersion }
             ?.key ?: getString(R.string.option_angle_disable)
-        return glVersionItems.indexOf(targetDisplay)
+        return glVersionMap.keys.indexOf(targetDisplay)
     }
 
 
