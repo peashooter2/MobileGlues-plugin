@@ -60,9 +60,9 @@
 
     <string name="dialog_info">应用信息</string>
 
-    <string name="dialog_permission_title">请先前往授权</string>
+    <string name="dialog_permission_title">请前往授权</string>
     <string name="dialog_permission_path_error_title">路径选择错误</string>
-    <string name="dialog_permission_msg">修改渲染选项需要读写权限，请授予读写权限后再修改。</string>
+    <string name="dialog_permission_msg">你似乎禁止了 MobileGlues 的授权请求。\n修改配置需要“存储”权限，你必须在授权后才能修改渲染器设置。\n\n请在接下来的页面中找到并授予“存储”权限！</string>
     <string name="dialog_permission_msg_android_Q">修改渲染选项需要读写权限，请授予读写权限后再修改。\n您稍后需要选择这个目录：\n%s\n若不存在名为 MG 的文件夹，请自行创建名为 MG 的文件夹。</string>
 
     <string name="dialog_title_warning">警告</string>

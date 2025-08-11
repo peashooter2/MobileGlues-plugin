@@ -49,7 +49,7 @@
     <string name="option_ext_timer_query">Disable Recommended \'timer_query\' Extension</string>
     <string name="option_ext_direct_state_access">Disable Advanced \'direct_state_access\' Extension</string>
     <string name="option_enable_fsr1" tools:ignore="Typos">(Experimental) Enable built-in FSR1</string>
-    
+
     <string name="option_custom_gl_version">Custom target OpenGL Version</string>
     <string name="warning_enabling_custom_gl_version"><b><big>⚠️ Important Notice:</big></b>\n\n
  • Setting a custom OpenGL version may <b><font color="@android:color/holo_red_dark">cause game crashes or rendering issues — proceed with caution</font></b>!\n
@@ -65,7 +65,7 @@
 
     <string name="dialog_permission_title">Permission Required</string>
     <string name="dialog_permission_path_error_title">Permission Required</string>
-    <string name="dialog_permission_msg">Modifying rendering options requires read and write permissions. Please grant read and write permissions before modifying.</string>
+    <string name="dialog_permission_msg">It looks like you denied the permission request for MobileGlues.\nYou must grant \'external storage\' permission to modify the renderer settings.\n\nPlease find and grant this permission on the next screen.</string>
     <string name="dialog_permission_msg_android_Q">Modifying rendering options requires read and write permissions. Please grant read and write permissions before making changes.\nYou will need to select this directory later: \n%s\nIf a folder named MG does not exist, please create one manually.</string>
 
     <string name="dialog_title_warning">Warning</string>
@@ -73,7 +73,7 @@
     <string name="warning_ext_cs_enable">Enabling the incomplete ARB_compute_shader extension may cause issues with some shaders and mods. Are you sure you want to continue?</string>
     <string name="warning_adreno_740_angle">Enabling ANGLE on Adreno 740 devices is highly likely to cause severe rendering issues. Are you sure you want to continue?</string>
     <string name="warning_enabling_angle_clear_workaround">Enabling the ANGLE Depth Clear Workaround fixes the issue of the handheld items being obscured in vanilla Minecraft 1.21.5+, but may cause performance degradation. Are you sure you want to continue?</string>
-    <string name="warning_fsr1_enable">Enabling the built-in FSR1 may cause image corruption on some drivers.\nIf your device is equipped with an Adreno GPU, please enable ANGLE to ensure correct rendering.\nIt is known that enabling this feature together with ANGLE can cause performance degradation, so please enable with caution.</string>    
+    <string name="warning_fsr1_enable">Enabling the built-in FSR1 may cause image corruption on some drivers.\nIf your device is equipped with an Adreno GPU, please enable ANGLE to ensure correct rendering.\nIt is known that enabling this feature together with ANGLE can cause performance degradation, so please enable with caution.</string>
     <string name="warning_load_failed">Failed to load MG config!</string>
     <string name="warning_save_failed">Failed to save MG config!</string>
     <string name="warning_path_selection_error">Path error! Please select: \n%s\nbut you selected:\n%s</string>
@@ -89,12 +89,12 @@ Please note, this action is <b><font color="@android:color/holo_red_dark">irreve
 <b><font color="@android:color/holo_red_dark">Are you sure you want to continue?</font></b></string>
     <string name="ok">OK</string>
     <string name="ok_with_countdown">OK (%d s)</string>
-	<string name="removing_mobileglues">Removing MobileGlues…</string>
-	<string name="deleting_config">Deleting config files…</string>
-	<string name="deleting_cache">Deleting cache files…</string>
-	<string name="deleting_logs">Deleting log files…</string>
-	<string name="cleaning_directory">Cleaning directory…</string>
-	<string name="removing_permissions">Removing permissions…</string>
+    <string name="removing_mobileglues">Removing MobileGlues…</string>
+    <string name="deleting_config">Deleting config files…</string>
+    <string name="deleting_cache">Deleting cache files…</string>
+    <string name="deleting_logs">Deleting log files…</string>
+    <string name="cleaning_directory">Cleaning directory…</string>
+    <string name="removing_permissions">Removing permissions…</string>
     <string name="remove_failed">Remove failed: %s</string>
     <string name="remove_complete_title">Removal Complete</string>
     <string name="remove_complete_message">MobileGlues related files have been completely removed.\nIf you need to completely remove MobileGlues from your device, please uninstall this software.</string>

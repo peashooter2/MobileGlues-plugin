@@ -44,6 +44,7 @@ import com.fcl.plugin.mobileglues.utils.Constants
 import com.fcl.plugin.mobileglues.utils.FileUtils
 import com.fcl.plugin.mobileglues.utils.toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,9 +58,22 @@ import com.google.android.material.R as MDC_R
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     CompoundButton.OnCheckedChangeListener {
 
-    private lateinit var glVersionMap: Map<String, Int>
+    private val glVersionMap: Map<String, Int> by lazy {
+        linkedMapOf(
+            getString(R.string.option_angle_disable) to 0,
+            "OpenGL 4.6" to 46,
+            "OpenGL 4.5" to 45,
+            "OpenGL 4.4" to 44,
+            "OpenGL 4.3" to 43,
+            "OpenGL 4.2" to 42,
+            "OpenGL 4.1" to 41,
+            "OpenGL 4.0" to 40,
+            "OpenGL 3.3" to 33,
+            "OpenGL 3.2" to 32
+        )
+    }
 
-    private lateinit var binding: ActivityMainBinding
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private var config: MGConfig? = null
     private lateinit var folderPermissionManager: FolderPermissionManager
     private var isSpinnerInitialized = false
@@ -112,7 +126,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 showOptions()
             } else {
                 // 如果用户仍然没有授予权限，可以再次显示请求或提示
-                checkPermission()
+                snackbar("授权失败")
             }
         }
 
@@ -128,16 +142,24 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 // 检查用户是否勾选了“不再询问”
                 if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     // 情况2: 用户选择了 "不再询问"，引导他们到设置
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", packageName, null)
-                    )
-                    // 使用另一个 launcher 来处理启动设置界面的结果
-                    appSettingsLauncher.launch(intent)
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.dialog_permission_title)
+                        .setMessage(R.string.dialog_permission_msg)
+                        .setPositiveButton(R.string.dialog_positive) { _, _ ->
+                            val intent = Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", packageName, null)
+                            )
+                            // 使用另一个 launcher 来处理启动设置界面的结果
+                            appSettingsLauncher.launch(intent)
+                        }
+                        .setNegativeButton(R.string.dialog_negative, null)
+                        .show()
+
                 } else {
                     // 情况3: 用户拒绝了，但没有勾选“不再询问”
                     // 你可以在这里给用户一个提示，然后再次请求权限
-                    checkPermission()
+                    snackbar("授权失败")
                 }
             }
         }
@@ -150,20 +172,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             window.isNavigationBarContrastEnforced = false
         }
 
-        glVersionMap = linkedMapOf(
-            getString(R.string.option_angle_disable) to 0,
-            "OpenGL 4.6" to 46,
-            "OpenGL 4.5" to 45,
-            "OpenGL 4.4" to 44,
-            "OpenGL 4.3" to 43,
-            "OpenGL 4.2" to 42,
-            "OpenGL 4.1" to 41,
-            "OpenGL 4.0" to 40,
-            "OpenGL 3.3" to 33,
-            "OpenGL 3.2" to 32
-        )
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         folderPermissionManager = FolderPermissionManager(this)
         setSupportActionBar(binding.appBar)
@@ -837,6 +845,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         return glVersionMap.keys.indexOf(targetDisplay)
     }
 
+    fun snackbar(text: CharSequence, duration: Int = Snackbar.LENGTH_SHORT) {
+        Snackbar.make(binding.root, text, duration).show()
+    }
 
     companion object {
         var MGDirectoryUri: Uri? = null
