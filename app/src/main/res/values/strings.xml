@@ -76,7 +76,7 @@
     <string name="warning_fsr1_enable">Enabling the built-in FSR1 may cause image corruption on some drivers.\nIf your device is equipped with an Adreno GPU, please enable ANGLE to ensure correct rendering.\nIt is known that enabling this feature together with ANGLE can cause performance degradation, so please enable with caution.</string>
     <string name="warning_load_failed">Failed to load MG config!</string>
     <string name="warning_save_failed">Failed to save MG config!</string>
-    <string name="warning_path_selection_error">Path error! Please select: \n%s\nbut you selected:\n%s</string>
+    <string name="warning_path_selection_error">Path error! Please select: \n%1$s\nbut you selected:\n%2$s</string>
 
     <string name="menu_item_remove">Remove MobileGlues related files</string>
     <string name="remove_mg_files_title">Remove MobileGlues related files</string>

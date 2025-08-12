@@ -74,7 +74,7 @@
     
     <string name="warning_load_failed">无法加载 MG 配置文件！</string>
     <string name="warning_save_failed">无法保存 MG 配置文件！</string>
-    <string name="warning_path_selection_error">路径错误！请选择：\n%s\n但您选择了：\n%s</string>
+    <string name="warning_path_selection_error">路径错误！请选择：\n%1$s\n但您选择了：\n%2$s</string>
 
     <string name="menu_item_remove">移除 MobileGlues 相关文件</string>
     <string name="remove_mg_files_title">移除 MobileGlues 相关文件</string>
