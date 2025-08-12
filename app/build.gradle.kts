@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.fcl.plugin.mobileglues"
-    compileSdk = 35
+    compileSdk = 36
 
     ndkVersion = "27.1.12297006"
 
     defaultConfig {
         applicationId = "com.fcl.plugin.mobileglues"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1300
         versionName = "1.3.0"
 
@@ -73,12 +73,6 @@ android {
         }
     }
 
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging = true
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -89,6 +83,11 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 

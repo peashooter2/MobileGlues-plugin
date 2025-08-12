@@ -1,23 +1,25 @@
 package com.fcl.plugin.mobileglues.settings
 
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.fcl.plugin.mobileglues.MainActivity
 import com.fcl.plugin.mobileglues.utils.Constants
 import com.fcl.plugin.mobileglues.utils.FileUtils
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
-import kotlin.properties.Delegates // 导入 Delegates
+import kotlin.properties.Delegates
 
-data class MGConfig(@Transient val context: Context) {
+data class MGConfig(val context: Context) {
     // 使用 Delegates.observable 委托属性
     var enableANGLE: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
     var enableNoError: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
@@ -25,7 +27,12 @@ data class MGConfig(@Transient val context: Context) {
     var enableExtTimerQuery: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
     var enableExtComputeShader: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
     var enableExtDirectStateAccess: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
-    var maxGlslCacheSize: Int by Delegates.observable(32) { _, old, new -> if (old != new) save() }
+    var maxGlslCacheSize: Int by Delegates.observable(32) { _, old, new ->
+        if (old != new) {
+            if (new == -1) clearCacheFile()
+            save()
+        }
+    }
     var multidrawMode: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
     var angleDepthClearFixMode: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
     var customGLVersion: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
@@ -47,9 +54,9 @@ data class MGConfig(@Transient val context: Context) {
                     if (!Files.exists(configFile.toPath())) return null
                     FileUtils.readText(configFile)
                 }
-            } catch (e: IOException) {
+            } catch (_: IOException) {
                 return null
-            } catch (e: RuntimeException) {
+            } catch (_: RuntimeException) {
                 return null
             }
 
@@ -62,7 +69,8 @@ data class MGConfig(@Transient val context: Context) {
                     config.enableExtGL43 = this.get("enableExtGL43")?.asInt ?: 0
                     config.enableExtTimerQuery = this.get("enableExtTimerQuery")?.asInt ?: 1
                     config.enableExtComputeShader = this.get("enableExtComputeShader")?.asInt ?: 0
-                    config.enableExtDirectStateAccess = this.get("enableExtDirectStateAccess")?.asInt ?: 1
+                    config.enableExtDirectStateAccess =
+                        this.get("enableExtDirectStateAccess")?.asInt ?: 1
                     config.maxGlslCacheSize = this.get("maxGlslCacheSize")?.asInt ?: 32
                     config.multidrawMode = this.get("multidrawMode")?.asInt ?: 0
                     config.angleDepthClearFixMode = this.get("angleDepthClearFixMode")?.asInt ?: 0
@@ -80,11 +88,11 @@ data class MGConfig(@Transient val context: Context) {
             return config
         }
     }
-    
+
     // 省略 saveConfig 和 save 方法，因为 observable 委托会直接调用 save(context)
     // 另外，Data Class 的特性不再适用，因为属性委托会改变属性的 getter/setter
     // 所以我将 data class 关键字移除，并修改了构造函数来接收 Context
-    
+
     fun deleteConfig() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -99,33 +107,28 @@ data class MGConfig(@Transient val context: Context) {
         }
     }
 
-    fun updateMaxGlslCacheSize(value: Int) {
-        if (value < -1 || value == 0) return
-        if (value == -1) clearCacheFile()
-        maxGlslCacheSize = value
-        // 不再需要手动调用 saveConfig()
-    }
-
     private fun clearCacheFile() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val uri = DocumentsContract.buildDocumentUriUsingTree(
-                    MainActivity.MGDirectoryUri,
-                    DocumentsContract.getTreeDocumentId(MainActivity.MGDirectoryUri) + "/glsl_cache.tmp"
-                )
-                MainActivity.MainActivityContext.contentResolver?.let {
-                    DocumentsContract.deleteDocument(it, uri)
+        (context as LifecycleOwner).lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val uri = DocumentsContract.buildDocumentUriUsingTree(
+                        MainActivity.MGDirectoryUri,
+                        DocumentsContract.getTreeDocumentId(MainActivity.MGDirectoryUri) + "/glsl_cache.tmp"
+                    )
+                    context.contentResolver?.let {
+                        DocumentsContract.deleteDocument(it, uri)
+                    }
+                } else {
+                    FileUtils.deleteFile(File(Constants.GLSL_CACHE_FILE_PATH))
                 }
-            } else {
-                FileUtils.deleteFile(File(Constants.GLSL_CACHE_FILE_PATH))
+            } catch (_: Exception) {
             }
-        } catch (_: Exception) {
         }
     }
 
     @Throws(IOException::class)
     fun save() {
-    val configMap = mapOf(
+        val configMap = mapOf(
             "enableANGLE" to enableANGLE,
             "enableNoError" to enableNoError,
             "enableExtGL43" to enableExtGL43,
@@ -138,7 +141,7 @@ data class MGConfig(@Transient val context: Context) {
             "customGLVersion" to customGLVersion,
             "fsr1Setting" to fsr1Setting
         )
-    
+
         val configStr = Gson().toJson(configMap)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val uri = MainActivity.MGDirectoryUri
