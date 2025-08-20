@@ -33,7 +33,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
@@ -50,8 +49,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.sql.Types
-import java.util.logging.Level
-import java.util.logging.Logger
 import kotlin.system.exitProcess
 import com.google.android.material.R as MDC_R
 
@@ -446,7 +443,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                     )
                 }
         } catch (e: Exception) {
-            Logger.getLogger("MG").log(Level.WARNING, "移除 SAF 权限失败", e)
+            Log.w("MG", "移除 SAF 权限失败", e)
         }
     }
 
@@ -570,11 +567,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 )
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    // EXTRA_INITIAL_URI 是可选的，但可以改善用户体验
-                    intent.putExtra(
-                        DocumentsContract.EXTRA_INITIAL_URI,
-                        (Environment.getExternalStorageDirectory().toString() + "/MG").toUri()
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                       // 1. 获取外部存储文档提供者的根 URI
+                        val rootUri = DocumentsContract.buildTreeDocumentUri(
+                            "com.android.externalstorage.documents",
+                            "primary" // "primary" 通常代表内部共享存储
+                        )
+
+                        // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
+                        // Document ID 的格式是 "root:path"
+                        val folderDocumentId = "primary:MG" 
+                        val initialUri = DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
+
+                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
+                    }
                     safLauncher.launch(intent)
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
