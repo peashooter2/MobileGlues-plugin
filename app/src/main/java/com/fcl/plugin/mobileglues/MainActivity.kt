@@ -446,7 +446,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                     )
                 }
         } catch (e: Exception) {
-            Logger.getLogger("MG").log(Level.WARNING, "移除 SAF 权限失败", e)
+            Log.w("MG", "移除 SAF 权限失败", e)
         }
     }
 
