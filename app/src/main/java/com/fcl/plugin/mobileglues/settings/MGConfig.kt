@@ -26,7 +26,7 @@ data class MGConfig(val context: Context) {
     var enableExtGL43: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
     var enableExtTimerQuery: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
     var enableExtComputeShader: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
-    var enableExtDirectStateAccess: Int by Delegates.observable(1) { _, old, new -> if (old != new) save() }
+    var enableExtDirectStateAccess: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
     var maxGlslCacheSize: Int by Delegates.observable(32) { _, old, new ->
         if (old != new) {
             if (new == -1) clearCacheFile()
@@ -81,7 +81,8 @@ data class MGConfig(val context: Context) {
                 // 处理历史遗留问题
                 val obj = JsonParser.parseString(configStr).asJsonObject
                 if (!obj.has("enableExtTimerQuery")) config.enableExtTimerQuery = 1
-                if (!obj.has("enableExtDirectStateAccess")) config.enableExtDirectStateAccess = 1
+
+                if (!obj.has("enableExtDirectStateAccess")) config.enableExtDirectStateAccess = 0
             } catch (_: Exception) {
             }
 
