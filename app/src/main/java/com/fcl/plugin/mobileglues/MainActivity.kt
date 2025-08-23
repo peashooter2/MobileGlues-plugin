@@ -567,20 +567,19 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 )
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                       // 1. 获取外部存储文档提供者的根 URI
-                        val rootUri = DocumentsContract.buildTreeDocumentUri(
-                            "com.android.externalstorage.documents",
-                            "primary" // "primary" 通常代表内部共享存储
-                        )
+                    // 1. 获取外部存储文档提供者的根 URI
+                    val rootUri = DocumentsContract.buildTreeDocumentUri(
+                        "com.android.externalstorage.documents",
+                        "primary" // "primary" 通常代表内部共享存储
+                    )
 
-                        // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
-                        // Document ID 的格式是 "root:path"
-                        val folderDocumentId = "primary:MG" 
-                        val initialUri = DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
+                    // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
+                    // Document ID 的格式是 "root:path"
+                    val folderDocumentId = "primary:MG"
+                    val initialUri =
+                        DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
 
-                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
-                    }
+                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
                     safLauncher.launch(intent)
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
