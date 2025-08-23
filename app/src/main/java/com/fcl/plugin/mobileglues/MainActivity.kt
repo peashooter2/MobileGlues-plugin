@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             // 当从应用设置返回时，重新检查权限
             if (hasLegacyPermissions()) {
+                MGConfig(this).save()
                 showOptions()
             } else {
                 // 如果用户仍然没有授予权限，可以再次显示请求或提示
@@ -133,6 +134,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             if (isGranted) {
                 // 情况1: 权限被授予
                 // 用户同意了权限，执行你的操作
+                MGConfig(this).save()
                 showOptions()
             } else {
                 // 情况2&3: 权限被拒绝
@@ -539,8 +541,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private fun checkPermissionSilently() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MGDirectoryUri = folderPermissionManager.getMGFolderUri()
-            val config = MGConfig.loadConfig(this)
-            if (config != null && MGDirectoryUri != null) {
+            if (MGDirectoryUri != null) {
+                (MGConfig.loadConfig(this) ?: MGConfig(this)).save()
                 showOptions()
             } else {
                 hideOptions()
