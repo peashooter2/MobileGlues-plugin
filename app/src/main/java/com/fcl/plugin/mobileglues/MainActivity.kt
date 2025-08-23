@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             // 当从应用设置返回时，重新检查权限
             if (hasLegacyPermissions()) {
+                MGConfig(this).save()
                 showOptions()
             } else {
                 // 如果用户仍然没有授予权限，可以再次显示请求或提示
@@ -133,6 +134,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             if (isGranted) {
                 // 情况1: 权限被授予
                 // 用户同意了权限，执行你的操作
+                MGConfig(this).save()
                 showOptions()
             } else {
                 // 情况2&3: 权限被拒绝
@@ -238,8 +240,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         }
     }
 
-    private fun hasLegacyPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(
+    private fun hasLegacyPermissions(): Boolean =
+        ActivityCompat.checkSelfPermission(
             this,
             Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED &&
@@ -247,7 +249,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                     this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
-    }
 
     override fun onResume() {
         super.onResume()
@@ -540,8 +541,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private fun checkPermissionSilently() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MGDirectoryUri = folderPermissionManager.getMGFolderUri()
-            val config = MGConfig.loadConfig(this)
-            if (config != null && MGDirectoryUri != null) {
+            if (MGDirectoryUri != null) {
+                (MGConfig.loadConfig(this) ?: MGConfig(this)).save()
                 showOptions()
             } else {
                 hideOptions()
@@ -567,20 +568,19 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 )
                 .setPositiveButton(R.string.dialog_positive) { _, _ ->
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                       // 1. 获取外部存储文档提供者的根 URI
-                        val rootUri = DocumentsContract.buildTreeDocumentUri(
-                            "com.android.externalstorage.documents",
-                            "primary" // "primary" 通常代表内部共享存储
-                        )
+                    // 1. 获取外部存储文档提供者的根 URI
+                    val rootUri = DocumentsContract.buildTreeDocumentUri(
+                        "com.android.externalstorage.documents",
+                        "primary" // "primary" 通常代表内部共享存储
+                    )
 
-                        // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
-                        // Document ID 的格式是 "root:path"
-                        val folderDocumentId = "primary:MG" 
-                        val initialUri = DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
+                    // 2. 在根 URI 的基础上构建指向 "MG" 文件夹的 Document-URI
+                    // Document ID 的格式是 "root:path"
+                    val folderDocumentId = "primary:MG"
+                    val initialUri =
+                        DocumentsContract.buildDocumentUriUsingTree(rootUri, folderDocumentId)
 
-                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
-                    }
+                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri)
                     safLauncher.launch(intent)
                 }
                 .setNegativeButton(R.string.dialog_negative) { dialog, _ -> dialog.dismiss() }
