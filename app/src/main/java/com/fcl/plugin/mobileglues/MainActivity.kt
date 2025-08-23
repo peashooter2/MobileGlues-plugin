@@ -238,8 +238,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         }
     }
 
-    private fun hasLegacyPermissions(): Boolean {
-        return ActivityCompat.checkSelfPermission(
+    private fun hasLegacyPermissions(): Boolean =
+        ActivityCompat.checkSelfPermission(
             this,
             Manifest.permission.READ_EXTERNAL_STORAGE
         ) == PackageManager.PERMISSION_GRANTED &&
@@ -247,7 +247,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                     this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
-    }
 
     override fun onResume() {
         super.onResume()
