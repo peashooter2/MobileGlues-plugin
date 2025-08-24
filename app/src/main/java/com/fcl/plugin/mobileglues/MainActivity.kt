@@ -474,7 +474,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             binding.angleClearWorkaround.setSelection(cfg.angleDepthClearFixMode)
             binding.switchExtGl43.isChecked = cfg.enableExtGL43 == 1
             binding.switchExtTimerQuery.isChecked = cfg.enableExtTimerQuery == 0
-            binding.switchExtDirectStateAccess.isChecked = cfg.enableExtDirectStateAccess == 0
+            binding.switchExtDirectStateAccess.isChecked = cfg.enableExtDirectStateAccess == 1
             binding.switchExtCs.isChecked = cfg.enableExtComputeShader == 1
             binding.switchEnableFsr1.isChecked = cfg.fsr1Setting == 1
             setCustomGLVersionSpinnerSelectionByGLVersion(cfg.customGLVersion)
@@ -734,7 +734,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             R.id.switch_ext_timer_query -> config?.enableExtTimerQuery =
                 if (isChecked) 0 else 1 // UI (disable) -> JSON (enable)
             R.id.switch_ext_direct_state_access -> config?.enableExtDirectStateAccess =
-                if (isChecked) 0 else 1
+                if (isChecked) 1 else 0
         }
     }
 
