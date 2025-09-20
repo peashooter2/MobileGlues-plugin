@@ -17,8 +17,16 @@ class AppInfoDialogBuilder(context: Context) : MaterialAlertDialogBuilder(contex
 
         setTitle(R.string.dialog_info)
         setView(view)
-        setPositiveButton(R.string.dialog_positive, null)
-        setNeutralButton(R.string.dialog_github) { _, _ ->
+        setNeutralButton(R.string.dialog_positive, null)
+        setNegativeButton(R.string.dialog_sponsor) { _, _ ->
+            context.startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    "https://www.buymeacoffee.com/Swung0x48".toUri()
+                )
+            )
+        }
+        setPositiveButton(R.string.dialog_github) { _, _ ->
             context.startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
