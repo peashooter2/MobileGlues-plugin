@@ -95,6 +95,25 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/end_barrier" />
 
+            <TextView
+                android:id="@+id/text_view_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/view_logo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_info_copyright" />
+
+            <TextView
+                android:id="@+id/text_info_logo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/info_logo"
+                app:layout_constraintBaseline_toBaselineOf="@+id/text_view_logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/end_barrier" />
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
