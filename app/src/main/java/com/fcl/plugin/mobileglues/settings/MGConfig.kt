@@ -39,6 +39,9 @@ data class MGConfig(val context: Context) {
     var fsr1Setting: Int by Delegates.observable(0) { _, old, new -> if (old != new) save() }
 
     companion object {
+        public var cacheConfigPath: String? = null
+        public var cacheMGDir: File = File("")
+
         fun loadConfig(context: Context): MGConfig? {
             val configStr: String = try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -129,7 +132,34 @@ data class MGConfig(val context: Context) {
 
     @Throws(IOException::class)
     fun save() {
-        val configMap = mapOf(
+        val configMap = buildConfigMap()
+
+        val configStr = Gson().toJson(configMap)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val uri = MainActivity.MGDirectoryUri
+                ?: throw IOException("SAF directory not selected")
+            FileUtils.writeText(context, uri, "config.json", configStr, "application/json")
+        } else {
+            FileUtils.writeText(File(Constants.CONFIG_FILE_PATH), configStr)
+        }
+    }
+
+    fun saveToCachePath() {
+        if (cacheConfigPath == null) {
+            val cacheDir = context.externalCacheDir ?: context.cacheDir
+            cacheMGDir = File(cacheDir, "MG")
+            if (!cacheMGDir.exists()) {
+                cacheMGDir.mkdirs()
+            }
+            cacheConfigPath = File(cacheMGDir, "config.json").absolutePath
+        }
+
+        val configMap = buildConfigMap()
+        FileUtils.writeText(File(cacheConfigPath!!), Gson().toJson(configMap))
+    }
+
+    private fun buildConfigMap(): Map<String, Int> {
+        return mapOf(
             "enableANGLE" to enableANGLE,
             "enableNoError" to enableNoError,
             "enableExtGL43" to enableExtGL43,
@@ -142,14 +172,5 @@ data class MGConfig(val context: Context) {
             "customGLVersion" to customGLVersion,
             "fsr1Setting" to fsr1Setting
         )
-
-        val configStr = Gson().toJson(configMap)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val uri = MainActivity.MGDirectoryUri
-                ?: throw IOException("SAF directory not selected")
-            FileUtils.writeText(context, uri, "config.json", configStr, "application/json")
-        } else {
-            FileUtils.writeText(File(Constants.CONFIG_FILE_PATH), configStr)
-        }
     }
 }

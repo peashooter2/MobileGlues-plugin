@@ -102,4 +102,9 @@ Please note, this action is <b><font color="@android:color/holo_red_dark">irreve
     <string name="remove_complete_title">Removal Complete</string>
     <string name="remove_complete_message">MobileGlues related files have been completely removed.\nIf you need to completely remove MobileGlues from your device, please uninstall this software.</string>
     <string name="exit">Exit</string>
+    <string name="info_mg_info">MobileGlues Info</string>
+    <string name="button_view_gl_info">Check</string>
+    <string name="loading">Loading…</string>
+    <string name="dialog_mg_gl_info_title">MobileGlues Info</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

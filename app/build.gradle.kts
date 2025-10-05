@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,14 +9,14 @@ android {
     namespace = "com.fcl.plugin.mobileglues"
     compileSdk = 36
 
-    ndkVersion = "27.1.12297006"
+    ndkVersion = "27.3.13750724"
 
     defaultConfig {
         applicationId = "com.fcl.plugin.mobileglues"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1320
-        versionName = "1.3.2"
+        versionCode = 1330
+        versionName = "1.3.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,7 +51,7 @@ android {
 
             manifestPlaceholders["boatEnv"] = mutableMapOf<String,String>().apply {
                 put("LIBGL_ES", "3")
-                put("DLOPEN", "libspirv-cross-c-shared.so,libshaderconv.so")
+                put("DLOPEN", "libspirv-cross-c-shared.so")
             }.run {
                 var env = ""
                 forEach { (key, value) ->
@@ -59,7 +61,7 @@ android {
             }
             manifestPlaceholders["pojavEnv"] = mutableMapOf<String,String>().apply {
                 put("LIBGL_ES", "3")
-                put("DLOPEN", "libspirv-cross-c-shared.so,libshaderconv.so")
+                put("DLOPEN", "libspirv-cross-c-shared.so")
                 put("POJAV_RENDERER", "opengles3")
 				put("POJAVEXEC_EGL", "libmobileglues.so")
 				put("LIBGL_EGL", "libmobileglues.so")
@@ -70,6 +72,12 @@ android {
                 }
                 env.dropLast(1)
             }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
         }
     }
 
